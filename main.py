@@ -12,22 +12,56 @@ import os
 
 # -------------------------------------
 
-TOKEN = os.environ.get("TOKEN")
+# --------UNCOMMENT FOR DEPLOY---------
+
 from keep_alive import keep_alive
+TOKEN = os.environ.get("TOKEN")
 keep_alive()
-bot = commands.Bot(command_prefix = ".")
+
+# -------------------------------------
+
+serverPrefix = "."
+bot = commands.Bot(command_prefix = serverPrefix, help_command=None)
 
 
 @bot.event
 async def on_ready():
-    activity = discord.Game(type=discord.ActivityType.watching, name="twitch.tv/es6x3 - топ киса")
-    await bot.change_presence(status=discord.Status.idle, activity=activity)
+    activity = discord.Game(name="twitch.tv/es6x3 - топ киса")
+    await bot.change_presence(status=discord.Status.online, activity=activity)
     print("Bot has just started.")
 
+@bot.group(invoke_without_command=True)
+async def help(ctx):
+    em = discord.Embed(title = "Commands Dashboard")
+    em.add_field(name="Use **`prefix`** to change server prefix.(doesn't work yet)",
+                 value=('Current server prefix is "' + serverPrefix+'"'), inline=False)
+    em.add_field(name='Use **`avatar`** to view users avatar.',
+                 value=("Sample: `avatar @user` (if u don't mention any user it shows your avatar.)"), inline=False)
+    em.add_field(name='Use **`mid`** to decide who is going to mid.',
+                 value=("This command doesn't have any arguments."), inline=False)
+    em.add_field(name='Use **`roll`** to roll a random number.',
+                 value=("Sample: `roll 1 1000` (By default it's rolling in 1-100 interval.)"), inline=False)
+    em.add_field(name='Use **`meme`** to get a random meme.',
+                 value=("Boring, not funny memes, shitty API"), inline=False)
+    em.add_field(name='Use **`flip`**- to flip a coin.',
+                 value=("Sample: `flip head` (U can guess side of the coin using `head/tail` after command)"), inline=False)
+    await ctx.send(embed = em)
+
+# @bot.command(pass_context=True)
+# async def prefix(ctx):
+#     await ctx.reply()
 
 @bot.command(pass_context=True)
-async def prefix(ctx):
-    await ctx.reply(midGame())
+async def avatar(ctx, targetPerson: discord.User=""):
+    if (targetPerson == ""):
+        targetPerson = ctx.author
+        targetAvatar = ctx.author.avatar_url
+    else:
+        targetAvatar = targetPerson.avatar_url
+    embed = discord.Embed()
+    embed.add_field(name = targetPerson, value="Click [Here](%s) to download picture." % targetAvatar, inline=False)
+    embed.set_image(url=targetAvatar)
+    await ctx.channel.send(embed=embed)
 
 
 @bot.command(pass_context=True)

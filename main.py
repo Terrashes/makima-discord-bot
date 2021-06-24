@@ -22,7 +22,7 @@ bot = commands.Bot(command_prefix = ".")
 async def on_ready():
     activity = discord.Game(type=discord.ActivityType.watching, name="twitch.tv/es6x3 - топ киса")
     await bot.change_presence(status=discord.Status.idle, activity=activity)
-    print("Bot is ready!")
+    print("Bot has just started.")
 
 
 @bot.command(pass_context=True)

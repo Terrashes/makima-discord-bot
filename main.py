@@ -3,10 +3,18 @@ from discord.ext import commands
 from random import randint
 import json
 import requests
-from keep_alive import keep_alive
 import os
 
+# -----------ONLY FOR TESTING----------
+
+# from settings import tokenKey
+# TOKEN = tokenKey
+
+# -------------------------------------
+
 TOKEN = os.environ.get("TOKEN")
+from keep_alive import keep_alive
+keep_alive()
 bot = commands.Bot(command_prefix = ".")
 
 
@@ -96,5 +104,4 @@ def midGame():
     else:
         return "Ты зароллил: " + userRoll + "\n" + "Я зароллил: " + botRoll + "\n" + "Ебаать, ты хоть знаешь какой шанс такое рольнуть? Реролл"
 
-keep_alive()
 bot.run(TOKEN)

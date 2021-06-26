@@ -1,9 +1,13 @@
 import discord
 from discord.ext import commands
 from random import randint
+# from twitchAPI.twitch import Twitch
+from discord.utils import get
 import json
 import requests
 import os
+from discord.ext.commands import Bot
+
 
 # -----------ONLY FOR TESTING----------
 
@@ -11,6 +15,7 @@ import os
 # TOKEN = tokenKey
 
 # -------------------------------------
+
 
 # --------UNCOMMENT FOR DEPLOY---------
 
@@ -20,36 +25,60 @@ keep_alive()
 
 # -------------------------------------
 
-serverPrefix = "."
-bot = commands.Bot(command_prefix = serverPrefix, help_command=None)
+
+def get_prefix(client, message):
+    with open("prefixes.json", "r") as f:
+        prefixes = json.load(f)
+    return prefixes[str(message.guild.id)]
+
+
+bot = Bot(command_prefix = get_prefix, help_command=None)
+
+
+@bot.event
+async def on_guild_join(guild):
+    with open("prefixes.json", "r") as f:
+        prefixes = json.load(f)
+    prefixes[str(guild.id)] = "?"
+    with open("prefixes.json", "w") as f:
+        json.dump(prefixes, f)
 
 
 @bot.event
 async def on_ready():
-    activity = discord.Game(name="twitch.tv/es6x3 - топ киса")
+    activity = discord.Game(name="?help")
     await bot.change_presence(status=discord.Status.online, activity=activity)
     print("Bot has just started.")
 
+
 @bot.group(invoke_without_command=True)
 async def help(ctx):
+    prefix = get_prefix(bot, ctx)
     em = discord.Embed(title = "Commands Dashboard")
-    em.add_field(name="Use **`prefix`** to change server prefix.(doesn't work yet)",
-                 value=('Current server prefix is "' + serverPrefix+'"'), inline=False)
-    em.add_field(name='Use **`avatar`** to view users avatar.',
+    em.add_field(name="Use `prefix` to change server prefix.",
+                 value=('Current server prefix is `"' + str(prefix) +'"`'), inline=False)
+    em.add_field(name="Use `purge` to delete latest messages in chat.",
+                 value=("Sample: `purge 10` (Deletes latest 10 messages in current chat.)"), inline=False)
+    em.add_field(name="Use `avatar` to view user's avatar.",
                  value=("Sample: `avatar @user` (if u don't mention any user it shows your avatar.)"), inline=False)
-    em.add_field(name='Use **`mid`** to decide who is going to mid.',
+    em.add_field(name="Use `mid` to decide who's going to mid.",
                  value=("This command doesn't have any arguments."), inline=False)
-    em.add_field(name='Use **`roll`** to roll a random number.',
+    em.add_field(name='Use `roll` to roll a random number.',
                  value=("Sample: `roll 1 1000` (By default it's rolling in 1-100 interval.)"), inline=False)
-    em.add_field(name='Use **`meme`** to get a random meme.',
+    em.add_field(name='Use `meme` to get a random meme.',
                  value=("Boring, not funny memes, shitty API"), inline=False)
-    em.add_field(name='Use **`flip`**- to flip a coin.',
+    em.add_field(name='Use `flip`- to flip a coin.',
                  value=("Sample: `flip head` (U can guess side of the coin using `head/tail` after command)"), inline=False)
     await ctx.send(embed = em)
 
-# @bot.command(pass_context=True)
-# async def prefix(ctx):
-#     await ctx.reply()
+
+@bot.command(pass_context=True)
+async def purge(ctx, amount):
+    messages = []
+    async for message in ctx.message.channel.history(limit=int(amount) + 1):
+        messages.append(message)
+    await ctx.message.channel.delete_messages(messages)
+
 
 @bot.command(pass_context=True)
 async def avatar(ctx, targetPerson: discord.User=""):
@@ -69,6 +98,41 @@ async def sosi(ctx):
     await ctx.reply("Сам соси черт бля")
 
 
+@bot.command()
+async def meme(ctx):
+    response = requests.get('https://some-random-api.ml/meme')
+    json_data = json.loads(response.text)
+    embed = discord.Embed(color = 0xffc7ff)
+    embed.set_image(url = json_data['image'])
+    await ctx.send(embed = embed)
+
+
+@bot.command()
+async def waifu(ctx):
+    response = requests.get('https://some-random-api.ml/meme')
+    json_data = json.loads(response.text)
+    embed = discord.Embed(color = 0xffc7ff)
+    embed.set_image(url = json_data['image'])
+    await ctx.send(embed = embed)
+
+
+@bot.command()
+@commands.has_permissions(administrator = True)
+async def prefix(ctx, prefixValue):
+    with open("prefixes.json", "r") as f:
+        prefixes = json.load(f)
+    if prefixes[str(ctx.guild.id)] != prefixValue:
+        prefixes[str(ctx.guild.id)] = prefixValue
+        with open("prefixes.json", "w") as f:
+            json.dump(prefixes, f)
+        await ctx.channel.send("Server prefix changed. Current prefix is " + '`"' + prefixValue + '"`' + " .")
+    else:
+        await ctx.channel.send("Server prefix didn't change because you specified the same prefix as current. Current prefix is " + '`"' + prefixes[str(ctx.guild.id)] + '"`' + " .")
+
+
+# ------------ROLL GAMES, ETC-------------
+
+
 @bot.command(pass_context=True)
 async def roll(ctx, minRoll=0, maxRoll=100):
     await ctx.reply(rollGame(minRoll, maxRoll))
@@ -83,24 +147,6 @@ async def mid(ctx):
 async def flip(ctx, arg=""):
     await ctx.reply(flipGame(arg))
 
-@bot.command()
-async def meme(ctx):
-    response = requests.get('https://some-random-api.ml/meme')
-    json_data = json.loads(response.text)
-    embed = discord.Embed(color = 0xffc7ff)
-    embed.set_image(url = json_data['image'])
-    await ctx.send(embed = embed)
-
-@bot.command()
-async def waifu(ctx):
-    response = requests.get('https://some-random-api.ml/meme')
-    json_data = json.loads(response.text)
-    embed = discord.Embed(color = 0xffc7ff)
-    embed.set_image(url = json_data['image'])
-    await ctx.send(embed = embed)
-
-# def changePrefix(min, max):
-#     return randint(min, max)
 
 def flipGame(resultFlip):
     resultFlipTrue = getRandom(1, 2)
@@ -120,6 +166,7 @@ def flipGame(resultFlip):
         else:
             return "Выпал орел"
 
+
 def getRandom(min, max):
     return str(randint(int(min), int(max)))
 
@@ -137,5 +184,6 @@ def midGame():
         return "Ты зароллил: " + userRoll + "\n" + "Я зароллил: " + botRoll + "\n" + userRoll + " < " + botRoll + "\n" + "Ez mid, ez life"
     else:
         return "Ты зароллил: " + userRoll + "\n" + "Я зароллил: " + botRoll + "\n" + "Ебаать, ты хоть знаешь какой шанс такое рольнуть? Реролл"
+
 
 bot.run(TOKEN)

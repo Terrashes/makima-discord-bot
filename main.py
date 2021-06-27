@@ -1,8 +1,7 @@
 import discord
 from discord.ext import commands
 from random import randint
-# from twitchAPI.twitch import Twitch
-from discord.utils import get
+from datetime import *
 import json
 import requests
 import os
@@ -32,7 +31,15 @@ def get_prefix(client, message):
     return prefixes[str(message.guild.id)]
 
 
+startupDate = datetime.now()
 bot = Bot(command_prefix = get_prefix, help_command=None)
+
+
+@bot.event
+async def on_ready():
+    activity = discord.Game(name="?help")
+    await bot.change_presence(status=discord.Status.online, activity=activity)
+    print("[{}] Makima is online now!".format(startupDate.isoformat(sep='T')))
 
 
 @bot.event
@@ -43,77 +50,55 @@ async def on_guild_join(guild):
     with open("prefixes.json", "w") as f:
         json.dump(prefixes, f)
 
-
-@bot.event
-async def on_ready():
-    activity = discord.Game(name="?help")
-    await bot.change_presence(status=discord.Status.online, activity=activity)
-    print("Bot has just started.")
-
+# ------------SERVICE COMMANDS-------------
 
 @bot.group(invoke_without_command=True)
 async def help(ctx):
     prefix = get_prefix(bot, ctx)
-    em = discord.Embed(title = "Commands Dashboard")
-    em.add_field(name="Use `prefix` to change server prefix.",
-                 value=('Current server prefix is `"' + str(prefix) +'"`'), inline=False)
-    em.add_field(name="Use `purge` to delete latest messages in chat.",
-                 value=("Sample: `purge 10` (Deletes latest 10 messages in current chat.)"), inline=False)
-    em.add_field(name="Use `avatar` to view user's avatar.",
-                 value=("Sample: `avatar @user` (if u don't mention any user it shows your avatar.)"), inline=False)
-    em.add_field(name="Use `mid` to decide who's going to mid.",
-                 value=("This command doesn't have any arguments."), inline=False)
-    em.add_field(name='Use `roll` to roll a random number.',
-                 value=("Sample: `roll 1 1000` (By default it's rolling in 1-100 interval.)"), inline=False)
-    em.add_field(name='Use `meme` to get a random meme.',
-                 value=("Boring, not funny memes, shitty API"), inline=False)
-    em.add_field(name='Use `flip`- to flip a coin.',
-                 value=("Sample: `flip head` (U can guess side of the coin using `head/tail` after command)"), inline=False)
-    await ctx.send(embed = em)
+    embed = discord.Embed(title = "Commands Dashboard")
+    embed.add_field(name="Use `prefix` to change server prefix.",
+                    value=('Current server prefix is `"' + str(prefix) +'"`'), inline=False)
+    embed.add_field(name="Use `uptime` to check bot's statistics.",
+                    value=("This command doesn't have any arguments."), inline=False)
+    embed.add_field(name="Use `purge` to delete latest messages in chat.",
+                    value=("Sample: `purge 10` (Deletes latest 10 messages in current chat.)"), inline=False)
+    embed.add_field(name="Use `avatar` to view user's avatar.",
+                    value=("Sample: `avatar @user` (if u don't mention any user it shows your avatar.)"), inline=False)
+    embed.add_field(name="Use `mid` to decide who's going to mid.",
+                    value=("This command doesn't have any arguments."), inline=False)
+    embed.add_field(name='Use `roll` to roll a random number.',
+                    value=("Sample: `roll 1 1000` (By default it's rolling in 1-100 interval.)"), inline=False)
+    embed.add_field(name='Use `meme` to get a random meme.',
+                    value=("Boring, not funny memes, shitty API"), inline=False)
+    embed.add_field(name='Use `flip`- to flip a coin.',
+                    value=("Sample: `flip head` (U can guess side of the coin using `head/tail` after command)"), inline=False)
+    await ctx.send(embed = embed)
 
 
 @bot.command(pass_context=True)
+@commands.has_permissions(administrator = True)
 async def purge(ctx, amount):
     messages = []
-    async for message in ctx.message.channel.history(limit=int(amount) + 1):
+    await ctx.channel.send("Deleting " + amount + " messages.")
+    async for message in ctx.message.channel.history(limit=int(amount) + 2):
         messages.append(message)
     await ctx.message.channel.delete_messages(messages)
 
 
 @bot.command(pass_context=True)
-async def avatar(ctx, targetPerson: discord.User=""):
-    if (targetPerson == ""):
-        targetPerson = ctx.author
-        targetAvatar = ctx.author.avatar_url
-    else:
-        targetAvatar = targetPerson.avatar_url
-    embed = discord.Embed()
-    embed.add_field(name = targetPerson, value="Click [Here](%s) to download picture." % targetAvatar, inline=False)
-    embed.set_image(url=targetAvatar)
-    await ctx.channel.send(embed=embed)
-
-
-@bot.command(pass_context=True)
-async def sosi(ctx):
-    await ctx.reply("Сам соси черт бля")
-
-
-@bot.command()
-async def meme(ctx):
-    response = requests.get('https://some-random-api.ml/meme')
-    json_data = json.loads(response.text)
-    embed = discord.Embed(color = 0xffc7ff)
-    embed.set_image(url = json_data['image'])
-    await ctx.send(embed = embed)
-
-
-@bot.command()
-async def waifu(ctx):
-    response = requests.get('https://some-random-api.ml/meme')
-    json_data = json.loads(response.text)
-    embed = discord.Embed(color = 0xffc7ff)
-    embed.set_image(url = json_data['image'])
-    await ctx.send(embed = embed)
+async def uptime(ctx):
+    startupDelta = (datetime.now() - startupDate)
+    startupDelta_s = startupDelta.total_seconds()
+    startupDelta_days = startupDelta.days
+    startupDelta_days = divmod(startupDelta_s, 86400)
+    startupDelta_hour = divmod(startupDelta_days[1], 3600)
+    startupDelta_min = divmod(startupDelta_hour[1], 60)
+    startupDelta_sec = divmod(startupDelta_min[1], 1)
+    embed = discord.Embed(title="Bot's uptime", description="Uptime: {} days, {} hours, {} min, {} sec".format(int(startupDelta_days[0]), int(startupDelta_hour[0]), int(startupDelta_min[0]), int(startupDelta_sec[0])))
+    embed.add_field(
+        name="Last started",
+        value = (startupDate), inline=False)
+    await ctx.send(embed=embed)
 
 
 @bot.command()
@@ -135,55 +120,54 @@ async def prefix(ctx, prefixValue):
 
 @bot.command(pass_context=True)
 async def roll(ctx, minRoll=0, maxRoll=100):
-    await ctx.reply(rollGame(minRoll, maxRoll))
+    await ctx.reply(getRandom(minRoll, maxRoll))
 
 
 @bot.command(pass_context=True)
 async def mid(ctx):
-    await ctx.reply(midGame())
+    userRoll = getRandom(1, 100)
+    botRoll = getRandom(1, 100)
+    if int(userRoll) > int(botRoll):
+        midResult = "Ты зароллил: " + userRoll + "\n" + "Я зароллил: " + botRoll + "\n" + userRoll + " > " + botRoll + "\n" + "Найс рандом чел"
+    elif int(userRoll) < int(botRoll):
+        midResult = "Ты зароллил: " + userRoll + "\n" + "Я зароллил: " + botRoll + "\n" + userRoll + " < " + botRoll + "\n" + "Ez mid, ez life"
+    else:
+        midResult = "Ты зароллил: " + userRoll + "\n" + "Я зароллил: " + botRoll + "\n" + "Ебаать, ты хоть знаешь какой шанс такое рольнуть? Реролл"
+    await ctx.reply(midResult)
 
 
 @bot.command(pass_context=True)
-async def flip(ctx, arg=""):
-    await ctx.reply(flipGame(arg))
-
-
-def flipGame(resultFlip):
+async def flip(ctx, resultFlip=""):
     resultFlipTrue = getRandom(1, 2)
     if resultFlip == 'head':
         if int(resultFlipTrue) == 1:
-            return "Выпал орел - ты угадал"
+            resultFlipFinal = "Выпал орел - ты угадал"
         else:
-            return "Выпала решка - ты не угадал"
+            resultFlipFinal = "Выпала решка - ты не угадал"
     elif resultFlip == 'tail':
         if int(resultFlipTrue) == 2:
-            return "Выпала решка - ты угадал"
+            resultFlipFinal = "Выпала решка - ты угадал"
         else:
-            return "Выпал орел - ты не угадал"
+            resultFlipFinal = "Выпал орел - ты не угадал"
     else:
         if int(resultFlipTrue) == 2:
-            return "Выпала решка"
+            resultFlipFinal = "Выпала решка"
         else:
-            return "Выпал орел"
+            resultFlipFinal = "Выпал орел"
+    await ctx.reply(resultFlipFinal)
+
+
+@bot.command()
+async def meme(ctx):
+    response = requests.get('https://some-random-api.ml/meme')
+    json_data = json.loads(response.text)
+    embed = discord.Embed(color=0xffc7ff)
+    embed.set_image(url=json_data['image'])
+    await ctx.send(embed=embed)
 
 
 def getRandom(min, max):
     return str(randint(int(min), int(max)))
-
-
-def rollGame(minRoll, maxRoll):
-    return getRandom(minRoll, maxRoll)
-
-
-def midGame():
-    userRoll = getRandom(1, 100)
-    botRoll = getRandom(1, 100)
-    if int(userRoll) > int(botRoll):
-        return "Ты зароллил: " + userRoll + "\n" + "Я зароллил: " + botRoll + "\n" + userRoll + " > " + botRoll + "\n" + "Найс рандом чел"
-    elif int(userRoll) < int(botRoll):
-        return "Ты зароллил: " + userRoll + "\n" + "Я зароллил: " + botRoll + "\n" + userRoll + " < " + botRoll + "\n" + "Ez mid, ez life"
-    else:
-        return "Ты зароллил: " + userRoll + "\n" + "Я зароллил: " + botRoll + "\n" + "Ебаать, ты хоть знаешь какой шанс такое рольнуть? Реролл"
 
 
 bot.run(TOKEN)

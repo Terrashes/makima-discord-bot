@@ -4,6 +4,8 @@ from random import randint
 from datetime import *
 import json
 import requests
+import aiohttp
+import asyncio
 import os
 from discord.ext.commands import Bot
 
@@ -37,8 +39,10 @@ bot = Bot(command_prefix = get_prefix, help_command=None)
 
 @bot.event
 async def on_ready():
+    startupDate = datetime.now()
     activity = discord.Game(name="?help")
     await bot.change_presence(status=discord.Status.online, activity=activity)
+    await bot.get_channel(857975713675477005).send("[{}] Makima is online now!".format(startupDate.isoformat(sep='T')))
     print("[{}] Makima is online now!".format(startupDate.isoformat(sep='T')))
 
 
@@ -70,7 +74,7 @@ async def help(ctx):
                     value=("Sample: `roll 1 1000` (By default it's rolling in 1-100 interval.)"), inline=False)
     embed.add_field(name='Use `meme` to get a random meme.',
                     value=("Boring, not funny memes, shitty API"), inline=False)
-    embed.add_field(name='Use `flip`- to flip a coin.',
+    embed.add_field(name='Use `flip` to flip a coin.',
                     value=("Sample: `flip head` (U can guess side of the coin using `head/tail` after command)"), inline=False)
     await ctx.send(embed = embed)
 
@@ -128,33 +132,35 @@ async def mid(ctx):
     userRoll = getRandom(1, 100)
     botRoll = getRandom(1, 100)
     if int(userRoll) > int(botRoll):
-        midResult = "Ты зароллил: " + userRoll + "\n" + "Я зароллил: " + botRoll + "\n" + userRoll + " > " + botRoll + "\n" + "Найс рандом чел"
+        midResult = "You rolled " + userRoll + "\n" + "Me rolled " + botRoll + "\n" + userRoll + " > " + botRoll + "\n" + "Mid is yours, going to ruin"
     elif int(userRoll) < int(botRoll):
-        midResult = "Ты зароллил: " + userRoll + "\n" + "Я зароллил: " + botRoll + "\n" + userRoll + " < " + botRoll + "\n" + "Ez mid, ez life"
+        midResult = "You rolled " + userRoll + "\n" + "Me rolled " + botRoll + "\n" + userRoll + " < " + botRoll + "\n" + "Ez mid, ez life"
     else:
-        midResult = "Ты зароллил: " + userRoll + "\n" + "Я зароллил: " + botRoll + "\n" + "Ебаать, ты хоть знаешь какой шанс такое рольнуть? Реролл"
+        midResult = "You rolled " + userRoll + "\n" + "Me rolled " + botRoll + "\n" + "Ебаать, ты хоть знаешь какой шанс такое рольнуть? Реролл"
     await ctx.reply(midResult)
 
 
 @bot.command(pass_context=True)
-async def flip(ctx, resultFlip=""):
-    resultFlipTrue = getRandom(1, 2)
-    if resultFlip == 'head':
-        if int(resultFlipTrue) == 1:
-            resultFlipFinal = "Выпал орел - ты угадал"
+async def flip(ctx, flipGuess=""):
+    flipResult = int(getRandom(1, 2))
+    print(flipResult)
+    if flipResult == 1:
+        flipMessage = "Flipped head"
+        if flipGuess == 'head':
+            flipMessage += " - you guessed right."
+        elif flipGuess == 'tail':
+            flipMessage += " - you didn't guess right."
         else:
-            resultFlipFinal = "Выпала решка - ты не угадал"
-    elif resultFlip == 'tail':
-        if int(resultFlipTrue) == 2:
-            resultFlipFinal = "Выпала решка - ты угадал"
-        else:
-            resultFlipFinal = "Выпал орел - ты не угадал"
+            flipMessage += "."
     else:
-        if int(resultFlipTrue) == 2:
-            resultFlipFinal = "Выпала решка"
+        flipMessage = "Flipped tail"
+        if flipGuess == 'head':
+            flipMessage += " - you didn't guess right."
+        elif flipGuess == 'tail':
+            flipMessage += " - you guessed right."
         else:
-            resultFlipFinal = "Выпал орел"
-    await ctx.reply(resultFlipFinal)
+            flipMessage += "."
+    await ctx.reply(flipMessage)
 
 
 @bot.command()
@@ -164,6 +170,17 @@ async def meme(ctx):
     embed = discord.Embed(color=0xffc7ff)
     embed.set_image(url=json_data['image'])
     await ctx.send(embed=embed)
+
+
+@bot.command()
+async def avatar(ctx, targetPerson:  discord.Member=None):
+    if not targetPerson:
+        targetPerson = ctx.author
+    targetAvatar = targetPerson.avatar_url
+    embed = discord.Embed()
+    embed.add_field(name = targetPerson, value="Click [Here](%s) to download picture." % targetAvatar, inline=False)
+    embed.set_image(url=targetAvatar)
+    await ctx.channel.send(embed=embed)
 
 
 def getRandom(min, max):

@@ -1,13 +1,10 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from random import randint
 from datetime import *
 import json
 import requests
-import aiohttp
-import asyncio
 import os
-from discord.ext.commands import Bot
 
 
 # -----------ONLY FOR TESTING----------
@@ -30,27 +27,26 @@ keep_alive()
 def get_prefix(client, message):
     with open("prefixes.json", "r") as f:
         prefixes = json.load(f)
-    return prefixes[str(message.guild.id)]
+    return prefixes[str(message.guild.id)], 'm!'
 
 
 startupDate = datetime.now()
-bot = Bot(command_prefix = get_prefix, help_command=None)
+bot = commands.Bot(command_prefix = get_prefix, help_command=None)
 
 
 @bot.event
 async def on_ready():
     startupDate = datetime.now()
-    activity = discord.Game(name="?help")
+    activity = discord.Game(name="m!help")
     await bot.change_presence(status=discord.Status.online, activity=activity)
-    await bot.get_channel(857975713675477005).send("[{}] Makima is online now!".format(startupDate.isoformat(sep='T')))
-    print("[{}] Makima is online now!".format(startupDate.isoformat(sep='T')))
+    print("[{}] Makima is online now!".format(startupDate.isoformat(sep=' ')))
 
 
 @bot.event
 async def on_guild_join(guild):
     with open("prefixes.json", "r") as f:
         prefixes = json.load(f)
-    prefixes[str(guild.id)] = "?"
+    prefixes[str(guild.id)] = "!m"
     with open("prefixes.json", "w") as f:
         json.dump(prefixes, f)
 
@@ -58,22 +54,20 @@ async def on_guild_join(guild):
 
 @bot.group(invoke_without_command=True)
 async def help(ctx):
-    prefix = get_prefix(bot, ctx)
-    embed = discord.Embed(title = "Commands Dashboard")
+    prefix = get_prefix(bot, ctx)[0]
+    embed = discord.Embed(title = "Commands Dashboard", color=0xff6961)
     embed.add_field(name="Use `prefix` to change server prefix.",
-                    value=('Current server prefix is `"' + str(prefix) +'"`'), inline=False)
+                    value=('Current server prefix is `{}`.'.format(prefix)), inline=False)
     embed.add_field(name="Use `uptime` to check bot's statistics.",
                     value=("This command doesn't have any arguments."), inline=False)
     embed.add_field(name="Use `purge` to delete latest messages in chat.",
-                    value=("Sample: `purge 10` (Deletes latest 10 messages in current chat.)"), inline=False)
+                    value=("Sample: `purge 10` (Deletes latest 10 messages in chat.)"), inline=False)
     embed.add_field(name="Use `avatar` to view user's avatar.",
                     value=("Sample: `avatar @user` (if u don't mention any user it shows your avatar.)"), inline=False)
     embed.add_field(name="Use `mid` to decide who's going to mid.",
                     value=("This command doesn't have any arguments."), inline=False)
     embed.add_field(name='Use `roll` to roll a random number.',
                     value=("Sample: `roll 1 1000` (By default it's rolling in 1-100 interval.)"), inline=False)
-    embed.add_field(name='Use `meme` to get a random meme.',
-                    value=("Boring, not funny memes, shitty API"), inline=False)
     embed.add_field(name='Use `flip` to flip a coin.',
                     value=("Sample: `flip head` (U can guess side of the coin using `head/tail` after command)"), inline=False)
     await ctx.send(embed = embed)
@@ -83,7 +77,7 @@ async def help(ctx):
 @commands.has_permissions(administrator = True)
 async def purge(ctx, amount):
     messages = []
-    await ctx.channel.send("Deleting " + amount + " messages.")
+    await ctx.channel.send("Deleting {} messages.".format(amount))
     async for message in ctx.message.channel.history(limit=int(amount) + 2):
         messages.append(message)
     await ctx.message.channel.delete_messages(messages)
@@ -98,7 +92,7 @@ async def uptime(ctx):
     startupDelta_hour = divmod(startupDelta_days[1], 3600)
     startupDelta_min = divmod(startupDelta_hour[1], 60)
     startupDelta_sec = divmod(startupDelta_min[1], 1)
-    embed = discord.Embed(title="Bot's uptime", description="Uptime: {} days, {} hours, {} min, {} sec".format(int(startupDelta_days[0]), int(startupDelta_hour[0]), int(startupDelta_min[0]), int(startupDelta_sec[0])))
+    embed = discord.Embed(color=0xff6961, title="Bot's uptime", description="Uptime: {} days, {} hours, {} min, {} sec".format(int(startupDelta_days[0]), int(startupDelta_hour[0]), int(startupDelta_min[0]), int(startupDelta_sec[0])))
     embed.add_field(
         name="Last started",
         value = (startupDate), inline=False)
@@ -107,16 +101,19 @@ async def uptime(ctx):
 
 @bot.command()
 @commands.has_permissions(administrator = True)
-async def prefix(ctx, prefixValue):
+async def prefix(ctx, prefixValue=""):
     with open("prefixes.json", "r") as f:
         prefixes = json.load(f)
-    if prefixes[str(ctx.guild.id)] != prefixValue:
+    if prefixValue == prefixes[str(ctx.guild.id)]:
+        await ctx.channel.send("Current prefix is `{}`. Server prefix didn't change because you specified the same prefix as current.".format(
+            prefixes[str(ctx.guild.id)]))
+    elif prefixValue == "":
+        await ctx.channel.send('Current prefix is `{}`.'.format(prefixes[str(ctx.guild.id)]))
+    else:
         prefixes[str(ctx.guild.id)] = prefixValue
         with open("prefixes.json", "w") as f:
             json.dump(prefixes, f)
-        await ctx.channel.send("Server prefix changed. Current prefix is " + '`"' + prefixValue + '"`' + " .")
-    else:
-        await ctx.channel.send("Server prefix didn't change because you specified the same prefix as current. Current prefix is " + '`"' + prefixes[str(ctx.guild.id)] + '"`' + " .")
+        await ctx.channel.send('Current prefix is `{}` Server prefix changed.'.format(prefixes[str(ctx.guild.id)]))
 
 
 # ------------ROLL GAMES, ETC-------------
@@ -143,33 +140,18 @@ async def mid(ctx):
 @bot.command(pass_context=True)
 async def flip(ctx, flipGuess=""):
     flipResult = int(getRandom(1, 2))
-    print(flipResult)
     if flipResult == 1:
-        flipMessage = "Flipped head"
-        if flipGuess == 'head':
-            flipMessage += " - you guessed right."
-        elif flipGuess == 'tail':
-            flipMessage += " - you didn't guess right."
-        else:
-            flipMessage += "."
+        flipResult = 'head'
     else:
-        flipMessage = "Flipped tail"
-        if flipGuess == 'head':
-            flipMessage += " - you didn't guess right."
-        elif flipGuess == 'tail':
-            flipMessage += " - you guessed right."
-        else:
-            flipMessage += "."
+        flipResult = 'tail'
+    flipMessage = "Flipped " + flipResult
+    if flipGuess == flipResult:
+        flipMessage += " - you guessed right."
+    elif flipGuess == 'head' or flipGuess == 'tail':
+        flipMessage += " - you didn't guess right."
+    else:
+        flipMessage += "."
     await ctx.reply(flipMessage)
-
-
-@bot.command()
-async def meme(ctx):
-    response = requests.get('https://some-random-api.ml/meme')
-    json_data = json.loads(response.text)
-    embed = discord.Embed(color=0xffc7ff)
-    embed.set_image(url=json_data['image'])
-    await ctx.send(embed=embed)
 
 
 @bot.command()
@@ -177,7 +159,7 @@ async def avatar(ctx, targetPerson:  discord.Member=None):
     if not targetPerson:
         targetPerson = ctx.author
     targetAvatar = targetPerson.avatar_url
-    embed = discord.Embed()
+    embed = discord.Embed(color=0xff6961)
     embed.add_field(name = targetPerson, value="Click [Here](%s) to download picture." % targetAvatar, inline=False)
     embed.set_image(url=targetAvatar)
     await ctx.channel.send(embed=embed)

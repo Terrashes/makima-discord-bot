@@ -46,9 +46,18 @@ async def on_ready():
 async def on_guild_join(guild):
     with open("prefixes.json", "r") as f:
         prefixes = json.load(f)
-    prefixes[str(guild.id)] = "!m"
+    prefixes[str(guild.id)] = "m!"
     with open("prefixes.json", "w") as f:
         json.dump(prefixes, f)
+
+@bot.event
+async def on_guild_remove(guild):
+    with open("prefixes.json", "r") as f:
+        prefixes = json.load(f)
+    del prefixes[str(guild.id)]
+    with open("prefixes.json", "w") as f:
+        json.dump(prefixes, f)
+
 
 # ------------SERVICE COMMANDS-------------
 
@@ -92,10 +101,16 @@ async def uptime(ctx):
     startupDelta_hour = divmod(startupDelta_days[1], 3600)
     startupDelta_min = divmod(startupDelta_hour[1], 60)
     startupDelta_sec = divmod(startupDelta_min[1], 1)
+    with open("prefixes.json", "r") as f:
+        prefixes = json.load(f)
+    serverCount = len(prefixes)
     embed = discord.Embed(color=0xff6961, title="Bot's uptime", description="Uptime: {} days, {} hours, {} min, {} sec".format(int(startupDelta_days[0]), int(startupDelta_hour[0]), int(startupDelta_min[0]), int(startupDelta_sec[0])))
     embed.add_field(
         name="Last started",
         value = (startupDate), inline=False)
+    embed.add_field(
+        name="Servers",
+        value=("Working on {} servers".format(serverCount)), inline=False)
     await ctx.send(embed=embed)
 
 

@@ -5,15 +5,13 @@ from datetime import *
 import json
 import requests
 import os
-
+from twitchAPI import Twitch
+from discord.utils import get
 
 # -----------ONLY FOR TESTING----------
 
 # from settings import tokenKey
 # TOKEN = tokenKey
-
-# -------------------------------------
-
 
 # --------UNCOMMENT FOR DEPLOY---------
 
@@ -22,16 +20,26 @@ TOKEN = os.environ.get("TOKEN")
 keep_alive()
 
 # -------------------------------------
-
-
 def get_prefix(client, message):
     with open("prefixes.json", "r") as f:
         prefixes = json.load(f)
     return prefixes[str(message.guild.id)], 'm!'
 
 
+intents = discord.Intents.all()
 startupDate = datetime.now()
-bot = commands.Bot(command_prefix = get_prefix, help_command=None)
+bot = commands.Bot(command_prefix = get_prefix, help_command=None, intents=intents)
+
+
+client_id = "r2k16dz59hslwf85ymgj6fenbomws2"
+client_secret = "an3wsp2p0slk5f0v0czdq8dwe4ru7r"
+twitch = Twitch(client_id, client_secret)
+twitch.authenticate_app([])
+TWITCH_STREAM_API_ENDPOINT_V5 = "https://api.twitch.tv/kraken/streams/{}"
+API_HEADERS = {
+    'Client-ID': client_id,
+    'Accept': 'application/vnd.twitchtv.v5+json',
+}
 
 
 @bot.event
@@ -40,6 +48,44 @@ async def on_ready():
     activity = discord.Game(name="m!help")
     await bot.change_presence(status=discord.Status.online, activity=activity)
     print("[{}] Makima is online now!".format(startupDate.isoformat(sep=' ')))
+
+#     @tasks.loop(seconds=10)
+#     async def live_notifs_loop():
+#         with open('streamers.json', 'r') as file:
+#             streamers = json.loads(file.read())
+#         if streamers is not None:
+#             guild = bot.get_guild(857975713675477002)
+#             channel = bot.get_channel(858826226235867156)
+#             for user_id, twitch_name in streamers.items():
+#                 status = checkuser(twitch_name)
+#                 user = bot.get_user(int(user_id))
+#                 if status is True:
+#                     async for message in channel.history(limit=200):
+#                         if str(user.mention) in message.content and "is now streaming" in message.content:
+#                             break
+#                         else:
+#                             await channel.send(
+#                                 f":red_circle: **LIVE**\n{user.mention} is now streaming on Twitch!"
+#                                 f"\nhttps://www.twitch.tv/{twitch_name}")
+#                             print(f"{user} started streaming. Sending a notification.")
+#                             break
+#                 else:
+#                     async for message in channel.history(limit=200):
+#                         if str(user.mention) in message.content and "is now streaming" in message.content:
+#                             await message.delete()
+#     live_notifs_loop.start()
+#
+#
+# @bot.command(name='addtwitch', help='Adds your Twitch to the live notifs.', pass_context=True)
+# async def add_twitch(ctx, twitch_name):
+#     # Opens and reads the json file.
+#     with open('streamers.json', 'r') as file:
+#         streamers = json.loads(file.read())
+#     user_id = ctx.author.id
+#     streamers[user_id] = twitch_name
+#     with open('streamers.json', 'w') as file:
+#         file.write(json.dumps(streamers))
+#     await ctx.send(f"Added {twitch_name} for {ctx.author} to the notifications list.")
 
 
 @bot.event
@@ -58,6 +104,24 @@ async def on_guild_remove(guild):
     with open("prefixes.json", "w") as f:
         json.dump(prefixes, f)
 
+
+# def checkuser(user):
+#     try:
+#         userid = twitch.get_users(logins=[user])['data'][0]['id']
+#         url = TWITCH_STREAM_API_ENDPOINT_V5.format(userid)
+#         try:
+#             req = requests.Session().get(url, headers=API_HEADERS)
+#             jsondata = req.json()
+#             if 'stream' in jsondata:
+#                 if jsondata['stream'] is not None:
+#                     return True
+#                 else:
+#                     return False
+#         except Exception as e:
+#             print("Error checking user: ", e)
+#             return False
+#     except IndexError:
+#         return False
 
 # ------------SERVICE COMMANDS-------------
 
@@ -85,11 +149,9 @@ async def help(ctx):
 @bot.command(pass_context=True)
 @commands.has_permissions(administrator = True)
 async def purge(ctx, amount):
-    messages = []
     await ctx.channel.send("Deleting {} messages.".format(amount))
-    async for message in ctx.message.channel.history(limit=int(amount) + 2):
-        messages.append(message)
-    await ctx.message.channel.delete_messages(messages)
+    await ctx.message.channel.purge(limit=int(amount) + 2)
+
 
 
 @bot.command(pass_context=True)

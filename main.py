@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands, tasks
-from random import randint
+import random
 from datetime import *
 import json
 import requests
@@ -20,6 +20,7 @@ TOKEN = os.environ.get("TOKEN")
 keep_alive()
 
 # -------------------------------------
+
 def get_prefix(client, message):
     with open("prefixes.json", "r") as f:
         prefixes = json.load(f)
@@ -48,45 +49,7 @@ async def on_ready():
     activity = discord.Game(name="m!help")
     await bot.change_presence(status=discord.Status.online, activity=activity)
     print("[{}] Makima is online now!".format(startupDate.isoformat(sep=' ')))
-
-#     @tasks.loop(seconds=10)
-#     async def live_notifs_loop():
-#         with open('streamers.json', 'r') as file:
-#             streamers = json.loads(file.read())
-#         if streamers is not None:
-#             guild = bot.get_guild(857975713675477002)
-#             channel = bot.get_channel(858826226235867156)
-#             for user_id, twitch_name in streamers.items():
-#                 status = checkuser(twitch_name)
-#                 user = bot.get_user(int(user_id))
-#                 if status is True:
-#                     async for message in channel.history(limit=200):
-#                         if str(user.mention) in message.content and "is now streaming" in message.content:
-#                             break
-#                         else:
-#                             await channel.send(
-#                                 f":red_circle: **LIVE**\n{user.mention} is now streaming on Twitch!"
-#                                 f"\nhttps://www.twitch.tv/{twitch_name}")
-#                             print(f"{user} started streaming. Sending a notification.")
-#                             break
-#                 else:
-#                     async for message in channel.history(limit=200):
-#                         if str(user.mention) in message.content and "is now streaming" in message.content:
-#                             await message.delete()
-#     live_notifs_loop.start()
-#
-#
-# @bot.command(name='addtwitch', help='Adds your Twitch to the live notifs.', pass_context=True)
-# async def add_twitch(ctx, twitch_name):
-#     # Opens and reads the json file.
-#     with open('streamers.json', 'r') as file:
-#         streamers = json.loads(file.read())
-#     user_id = ctx.author.id
-#     streamers[user_id] = twitch_name
-#     with open('streamers.json', 'w') as file:
-#         file.write(json.dumps(streamers))
-#     await ctx.send(f"Added {twitch_name} for {ctx.author} to the notifications list.")
-
+    
 
 @bot.event
 async def on_guild_join(guild):
@@ -95,6 +58,7 @@ async def on_guild_join(guild):
     prefixes[str(guild.id)] = "m!"
     with open("prefixes.json", "w") as f:
         json.dump(prefixes, f)
+
 
 @bot.event
 async def on_guild_remove(guild):
@@ -105,25 +69,8 @@ async def on_guild_remove(guild):
         json.dump(prefixes, f)
 
 
-# def checkuser(user):
-#     try:
-#         userid = twitch.get_users(logins=[user])['data'][0]['id']
-#         url = TWITCH_STREAM_API_ENDPOINT_V5.format(userid)
-#         try:
-#             req = requests.Session().get(url, headers=API_HEADERS)
-#             jsondata = req.json()
-#             if 'stream' in jsondata:
-#                 if jsondata['stream'] is not None:
-#                     return True
-#                 else:
-#                     return False
-#         except Exception as e:
-#             print("Error checking user: ", e)
-#             return False
-#     except IndexError:
-#         return False
-
 # ------------SERVICE COMMANDS-------------
+
 
 @bot.group(invoke_without_command=True)
 async def help(ctx):
@@ -143,6 +90,8 @@ async def help(ctx):
                     value=("Sample: `roll 1 1000` (By default it's rolling in 1-100 interval.)"), inline=False)
     embed.add_field(name='Use `flip` to flip a coin.',
                     value=("Sample: `flip head` (U can guess side of the coin using `head/tail` after command)"), inline=False)
+    embed.add_field(name='There are some new gif commands:',
+                    value=("`fuck`, `kiss`, `pat`, `kick`, `shy`, `slap`, `spank`, `deadinside`"), inline=False)
     await ctx.send(embed = embed)
 
 
@@ -151,7 +100,6 @@ async def help(ctx):
 async def purge(ctx, amount):
     await ctx.channel.send("Deleting {} messages.".format(amount))
     await ctx.message.channel.purge(limit=int(amount) + 2)
-
 
 
 @bot.command(pass_context=True)
@@ -191,6 +139,11 @@ async def prefix(ctx, prefixValue=""):
         with open("prefixes.json", "w") as f:
             json.dump(prefixes, f)
         await ctx.channel.send('Current prefix is `{}` Server prefix changed.'.format(prefixes[str(ctx.guild.id)]))
+
+
+@bot.command()
+async def ping(ctx):
+    await ctx.send('Pong! {0}'.format(round(bot.latency, 1)))
 
 
 # ------------ROLL GAMES, ETC-------------
@@ -243,7 +196,113 @@ async def avatar(ctx, targetPerson:  discord.Member=None):
 
 
 def getRandom(min, max):
-    return str(randint(int(min), int(max)))
+    return str(random.randint(int(min), int(max)))
 
+
+# ------------GIF ACTIONS-------------
+
+
+@bot.command()
+async def fuck(ctx, targetPerson: discord.User=None):
+    action = fuck
+    if not targetPerson:
+        await ctx.channel.send('To use this command please mention any user.')
+        return    
+    file = discord.File(getGif(action), filename="image.gif")
+    embed = discord.Embed(color=0xff6961,
+        description = '{} {}s {}'.format(ctx.author.name, action, targetPerson.mention))
+    embed.set_image(url="attachment://image.gif")
+    await ctx.channel.send(file=file, embed=embed)
+
+
+@bot.command()
+async def kick(ctx, targetPerson: discord.User=None):
+    action = kick
+    if not targetPerson:
+        await ctx.channel.send('To use this command please mention any user.')
+        return    
+    file = discord.File(getGif(action), filename="image.gif")
+    embed = discord.Embed(color=0xff6961,
+        description = '{} {}s {}'.format(ctx.author.name, action, targetPerson.mention))
+    embed.set_image(url="attachment://image.gif")
+    await ctx.channel.send(file=file, embed=embed)
+
+
+@bot.command()
+async def kiss(ctx, targetPerson: discord.User=None):
+    action = kiss
+    if not targetPerson:
+        await ctx.channel.send('To use this command please mention any user.')
+        return    
+    file = discord.File(getGif(action), filename="image.gif")
+    embed = discord.Embed(color=0xff6961,
+        description = '{} {}es {}'.format(ctx.author.name, action, targetPerson.mention))
+    embed.set_image(url="attachment://image.gif")
+    await ctx.channel.send(file=file, embed=embed)
+
+
+@bot.command()
+async def pat(ctx, targetPerson: discord.User=None):
+    action = pat
+    if not targetPerson:
+        await ctx.channel.send('To use this command please mention any user.')
+        return    
+    file = discord.File(getGif(action), filename="image.gif")
+    embed = discord.Embed(color=0xff6961,
+        description = '{} {}s {}'.format(ctx.author.name, action, targetPerson.mention))
+    embed.set_image(url="attachment://image.gif")
+    await ctx.channel.send(file=file, embed=embed)
+
+
+@bot.command()
+async def slap(ctx, targetPerson: discord.Member=None):
+    action = slap
+    if not targetPerson:
+        await ctx.channel.send('To use this command please mention any user.')
+        return    
+    file = discord.File(getGif(action), filename="image.gif")
+    embed = discord.Embed(color=0xff6961,
+        description = '{} {}s {}'.format(ctx.author.name, action, targetPerson))
+    embed.set_image(url="attachment://image.gif")
+    await ctx.channel.send(file=file, embed=embed)
+
+
+@bot.command()
+async def spank(ctx, targetPerson: discord.Member=None):
+    action = spank
+    if not targetPerson:
+        await ctx.channel.send('To use this command please mention any user.')
+        return    
+    file = discord.File(getGif(action), filename="image.gif")
+    embed = discord.Embed(color=0xff6961,
+        description = '{} {}s {}'.format(ctx.author.name, action, targetPerson))
+    embed.set_image(url="attachment://image.gif")
+    await ctx.channel.send(file=file, embed=embed)
+        
+
+@bot.command()
+async def shy(ctx):
+    action = shy 
+    file = discord.File(getGif(action), filename="image.gif")
+    embed = discord.Embed(color=0xff6961,
+        description = '{} is {}'.format(ctx.author.name, action))
+    embed.set_image(url="attachment://image.gif")
+    await ctx.channel.send(file=file, embed=embed)
+
+
+@bot.command()
+async def deadinside(ctx):
+    action = deadinside 
+    file = discord.File(getGif(action), filename="image.gif")
+    embed = discord.Embed(color=0xff6961,
+        description = '{} is dead inside.'.format(ctx.author.name))
+    embed.set_image(url="attachment://image.gif")
+    await ctx.channel.send(file=file, embed=embed)
+
+
+def getGif(command):
+    DIR = "img/{}/".format(command)
+    filesAll = [name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name))]
+    return "img/{}/{}".format(command, random.choice(filesAll))
 
 bot.run(TOKEN)

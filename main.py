@@ -78,7 +78,7 @@ async def help(ctx):
     embed = discord.Embed(title = "Commands Dashboard", color=0xff6961)
     embed.add_field(name="Use `prefix` to change server prefix.",
                     value=('Current server prefix is `{}`.'.format(prefix)), inline=False)
-    embed.add_field(name="Use `uptime` to check bot's statistics.",
+    embed.add_field(name="Use `status` to check bot's statistics.",
                     value=("This command doesn't have any arguments."), inline=False)
     embed.add_field(name="Use `purge` to delete latest messages in chat.",
                     value=("Sample: `purge 10` (Deletes latest 10 messages in chat.)"), inline=False)
@@ -95,7 +95,7 @@ async def help(ctx):
     await ctx.send(embed = embed)
 
 
-@bot.command(pass_context=True)
+@bot.command(aliases=['p', 'cls', 'clear', 'del', 'delete'])
 @commands.has_permissions(administrator = True)
 async def purge(ctx, amount):
     await ctx.channel.send("Deleting {} messages.".format(amount))
@@ -103,7 +103,7 @@ async def purge(ctx, amount):
 
 
 @bot.command(pass_context=True)
-async def uptime(ctx):
+async def status(ctx):
     startupDelta = (datetime.now() - startupDate)
     startupDelta_s = startupDelta.total_seconds()
     startupDelta_days = startupDelta.days
@@ -117,10 +117,13 @@ async def uptime(ctx):
     embed = discord.Embed(color=0xff6961, title="Bot's uptime", description="Uptime: {} days, {} hours, {} min, {} sec".format(int(startupDelta_days[0]), int(startupDelta_hour[0]), int(startupDelta_min[0]), int(startupDelta_sec[0])))
     embed.add_field(
         name="Last started",
-        value = (startupDate), inline=False)
+        value = (startupDate.strftime("`%H:%M:%S` `%d.%m.%Y`")), inline=False)
     embed.add_field(
         name="Servers",
-        value=("Working on {} servers".format(serverCount)), inline=False)
+        value=("Working on `{} servers`".format(serverCount)), inline=False)
+    embed.add_field(
+        name="Latency",
+        value=("Bot's ping is `{} ms`".format(int(bot.latency*1000//1))), inline=False)
     await ctx.send(embed=embed)
 
 
@@ -143,7 +146,7 @@ async def prefix(ctx, prefixValue=""):
 
 @bot.command()
 async def ping(ctx):
-    await ctx.send('Pong! {0}'.format(round(bot.latency, 1)))
+    await ctx.send()
 
 
 # ------------ROLL GAMES, ETC-------------
@@ -203,106 +206,95 @@ def getRandom(min, max):
 
 
 @bot.command()
-async def fuck(ctx, targetPerson: discord.User=None):
-    action = fuck
-    if not targetPerson:
-        await ctx.channel.send('To use this command please mention any user.')
-        return    
-    file = discord.File(getGif(action), filename="image.gif")
-    embed = discord.Embed(color=0xff6961,
-        description = '{} {}s {}'.format(ctx.author.name, action, targetPerson.mention))
-    embed.set_image(url="attachment://image.gif")
+async def deadinside(ctx):
+    file, embed = getGif(deadinside, ctx.author)
     await ctx.channel.send(file=file, embed=embed)
 
 
 @bot.command()
-async def kick(ctx, targetPerson: discord.User=None):
-    action = kick
+async def fuck(ctx, targetPerson: discord.Member=None):
     if not targetPerson:
         await ctx.channel.send('To use this command please mention any user.')
-        return    
-    file = discord.File(getGif(action), filename="image.gif")
-    embed = discord.Embed(color=0xff6961,
-        description = '{} {}s {}'.format(ctx.author.name, action, targetPerson.mention))
-    embed.set_image(url="attachment://image.gif")
+        return  
+    file, embed = getGif(fuck, ctx.author, targetPerson)
     await ctx.channel.send(file=file, embed=embed)
 
 
 @bot.command()
-async def kiss(ctx, targetPerson: discord.User=None):
-    action = kiss
+async def kick(ctx, targetPerson: discord.Member=None):
     if not targetPerson:
         await ctx.channel.send('To use this command please mention any user.')
-        return    
-    file = discord.File(getGif(action), filename="image.gif")
-    embed = discord.Embed(color=0xff6961,
-        description = '{} {}es {}'.format(ctx.author.name, action, targetPerson.mention))
-    embed.set_image(url="attachment://image.gif")
+        return  
+    file, embed = getGif(kick, ctx.author, targetPerson)
     await ctx.channel.send(file=file, embed=embed)
 
 
 @bot.command()
-async def pat(ctx, targetPerson: discord.User=None):
-    action = pat
+async def kiss(ctx, targetPerson: discord.Member=None):
     if not targetPerson:
         await ctx.channel.send('To use this command please mention any user.')
-        return    
-    file = discord.File(getGif(action), filename="image.gif")
-    embed = discord.Embed(color=0xff6961,
-        description = '{} {}s {}'.format(ctx.author.name, action, targetPerson.mention))
-    embed.set_image(url="attachment://image.gif")
+        return  
+    file, embed = getGif(kiss, ctx.author, targetPerson)
+    await ctx.channel.send(file=file, embed=embed)
+
+
+@bot.command()
+async def pat(ctx, targetPerson: discord.Member=None):
+    if not targetPerson:
+        await ctx.channel.send('To use this command please mention any user.')
+        return  
+    file, embed = getGif(pat, ctx.author, targetPerson)
+    await ctx.channel.send(file=file, embed=embed)
+
+
+@bot.command()
+async def shy(ctx):
+    file, embed = getGif(shy, ctx.author)
     await ctx.channel.send(file=file, embed=embed)
 
 
 @bot.command()
 async def slap(ctx, targetPerson: discord.Member=None):
-    action = slap
     if not targetPerson:
         await ctx.channel.send('To use this command please mention any user.')
-        return    
-    file = discord.File(getGif(action), filename="image.gif")
-    embed = discord.Embed(color=0xff6961,
-        description = '{} {}s {}'.format(ctx.author.name, action, targetPerson))
-    embed.set_image(url="attachment://image.gif")
+        return  
+    file, embed = getGif(slap, ctx.author, targetPerson)
     await ctx.channel.send(file=file, embed=embed)
 
 
 @bot.command()
 async def spank(ctx, targetPerson: discord.Member=None):
-    action = spank
     if not targetPerson:
         await ctx.channel.send('To use this command please mention any user.')
-        return    
-    file = discord.File(getGif(action), filename="image.gif")
-    embed = discord.Embed(color=0xff6961,
-        description = '{} {}s {}'.format(ctx.author.name, action, targetPerson))
-    embed.set_image(url="attachment://image.gif")
+        return  
+    file, embed = getGif(spank, ctx.author, targetPerson)
     await ctx.channel.send(file=file, embed=embed)
         
 
-@bot.command()
-async def shy(ctx):
-    action = shy 
-    file = discord.File(getGif(action), filename="image.gif")
-    embed = discord.Embed(color=0xff6961,
-        description = '{} is {}'.format(ctx.author.name, action))
-    embed.set_image(url="attachment://image.gif")
-    await ctx.channel.send(file=file, embed=embed)
-
-
-@bot.command()
-async def deadinside(ctx):
-    action = deadinside 
-    file = discord.File(getGif(action), filename="image.gif")
-    embed = discord.Embed(color=0xff6961,
-        description = '{} is dead inside.'.format(ctx.author.name))
-    embed.set_image(url="attachment://image.gif")
-    await ctx.channel.send(file=file, embed=embed)
-
-
-def getGif(command):
+def getGif(command, author, targetPerson: discord.Member=None):
     DIR = "img/{}/".format(command)
     filesAll = [name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name))]
-    return "img/{}/{}".format(command, random.choice(filesAll))
+    gif = "img/{}/{}".format(command, random.choice(filesAll))
+    file = discord.File(gif, filename="image.gif")
+    if targetPerson == None:
+        actions = {
+            'deadinside' : '{} is dead inside.'.format(author.name),
+            'shy' : '{} is {}'.format(author.name, command),
+        }
+    else: 
+        actions = {  
+            'fuck' : '{} {}s {}'.format(author.name, command, targetPerson.mention),               
+            'kick' : '{} {}s {}'.format(author.name, command, targetPerson.mention),
+            'kiss' : '{} {}es {}'.format(author.name, command, targetPerson.mention),
+            'pat' : '{} {}s {}'.format(author.name, command, targetPerson.mention),
+            'slap' : '{} {}s {}'.format(author.name, command, targetPerson.mention),
+            'spank' : '{} {}s {}'.format(author.name, command, targetPerson.mention), 
+        }
+    description = actions[str(command)]
+    if targetPerson == bot.user:
+        description += '\n😳'
+    embed = discord.Embed(color=0xff6961, description = description)
+    embed.set_image(url="attachment://image.gif")
+    return file, embed
 
 bot.run(TOKEN)

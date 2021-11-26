@@ -5,19 +5,18 @@ from datetime import *
 import json
 import requests
 import os
-from twitchAPI import Twitch
-from discord.utils import get
+
 
 # -----------ONLY FOR TESTING----------
 
-# from settings import tokenKey
-# TOKEN = tokenKey
+from settings import tokenKey
+TOKEN = tokenKey
 
 # --------UNCOMMENT FOR DEPLOY---------
 
-from keep_alive import keep_alive
-TOKEN = os.environ.get("TOKEN")
-keep_alive()
+# from keep_alive import keep_alive
+# TOKEN = os.environ.get("TOKEN")
+# keep_alive()
 
 # -------------------------------------
 
@@ -30,17 +29,6 @@ def get_prefix(client, message):
 intents = discord.Intents.all()
 startupDate = datetime.now()
 bot = commands.Bot(command_prefix = get_prefix, help_command=None, intents=intents)
-
-
-client_id = "r2k16dz59hslwf85ymgj6fenbomws2"
-client_secret = "an3wsp2p0slk5f0v0czdq8dwe4ru7r"
-twitch = Twitch(client_id, client_secret)
-twitch.authenticate_app([])
-TWITCH_STREAM_API_ENDPOINT_V5 = "https://api.twitch.tv/kraken/streams/{}"
-API_HEADERS = {
-    'Client-ID': client_id,
-    'Accept': 'application/vnd.twitchtv.v5+json',
-}
 
 
 @bot.event
@@ -81,16 +69,16 @@ async def help(ctx):
     embed.add_field(name="Use `status` to check bot's statistics.",
                     value=("This command doesn't have any arguments."), inline=False)
     embed.add_field(name="Use `purge` to delete latest messages in chat.",
-                    value=("Sample: `purge 10` (Deletes latest 10 messages in chat.)"), inline=False)
+                    value=("Sample: `purge 10` (Deletes latest 10 messages in chat.)\n Alternatives: `p`, `cls`, `clear`, `del`, `delete`"), inline=False)
     embed.add_field(name="Use `avatar` to view user's avatar.",
-                    value=("Sample: `avatar @user` (if u don't mention any user it shows your avatar.)"), inline=False)
+                    value=("Sample: `avatar @user` (Shows author's avatar if no user has been mentioned.)"), inline=False)
     embed.add_field(name="Use `mid` to decide who's going to mid.",
                     value=("This command doesn't have any arguments."), inline=False)
     embed.add_field(name='Use `roll` to roll a random number.',
                     value=("Sample: `roll 1 1000` (By default it's rolling in 1-100 interval.)"), inline=False)
     embed.add_field(name='Use `flip` to flip a coin.',
-                    value=("Sample: `flip head` (U can guess side of the coin using `head/tail` after command)"), inline=False)
-    embed.add_field(name='There are some new gif commands:',
+                    value=("Sample: `flip head` (Guess side of the coin using `head/tail` after command)"), inline=False)
+    embed.add_field(name='❗Hey! Check out some new GIF commands!',
                     value=("`fuck`, `kiss`, `pat`, `kick`, `shy`, `slap`, `spank`, `deadinside`"), inline=False)
     await ctx.send(embed = embed)
 
@@ -142,11 +130,6 @@ async def prefix(ctx, prefixValue=""):
         with open("prefixes.json", "w") as f:
             json.dump(prefixes, f)
         await ctx.channel.send('Current prefix is `{}` Server prefix changed.'.format(prefixes[str(ctx.guild.id)]))
-
-
-@bot.command()
-async def ping(ctx):
-    await ctx.send()
 
 
 # ------------ROLL GAMES, ETC-------------
@@ -202,99 +185,33 @@ def getRandom(min, max):
     return str(random.randint(int(min), int(max)))
 
 
-# ------------GIF ACTIONS-------------
+# ------------JOIN lEAVE MESSAGES-------------
 
 
 @bot.command()
-async def deadinside(ctx):
-    file, embed = getGif(deadinside, ctx.author)
-    await ctx.channel.send(file=file, embed=embed)
+async def onjoin(ctx):
+    global joinChannel
+    joinChannel = ctx.channel
+    await ctx.channel.send("Now notification about new members will be shown in this channel")
+    
+
+@bot.event
+async def on_member_join(Member):
+    await joinChannel.send("{} just joined the server!".format(Member.mention))
 
 
 @bot.command()
-async def fuck(ctx, targetPerson: discord.Member=None):
-    if not targetPerson:
-        await ctx.channel.send('To use this command please mention any user.')
-        return  
-    file, embed = getGif(fuck, ctx.author, targetPerson)
-    await ctx.channel.send(file=file, embed=embed)
+async def onleave(ctx):
+    global leaveChannel
+    leaveChannel = ctx.channel
+    await ctx.channel.send("Now notification about new members will be shown in this channel")
+    
+
+@bot.event
+async def on_member_remove(Member):
+    await leaveChannel.send("{} just leaved the server!".format(Member.mention))
 
 
-@bot.command()
-async def kick(ctx, targetPerson: discord.Member=None):
-    if not targetPerson:
-        await ctx.channel.send('To use this command please mention any user.')
-        return  
-    file, embed = getGif(kick, ctx.author, targetPerson)
-    await ctx.channel.send(file=file, embed=embed)
-
-
-@bot.command()
-async def kiss(ctx, targetPerson: discord.Member=None):
-    if not targetPerson:
-        await ctx.channel.send('To use this command please mention any user.')
-        return  
-    file, embed = getGif(kiss, ctx.author, targetPerson)
-    await ctx.channel.send(file=file, embed=embed)
-
-
-@bot.command()
-async def pat(ctx, targetPerson: discord.Member=None):
-    if not targetPerson:
-        await ctx.channel.send('To use this command please mention any user.')
-        return  
-    file, embed = getGif(pat, ctx.author, targetPerson)
-    await ctx.channel.send(file=file, embed=embed)
-
-
-@bot.command()
-async def shy(ctx):
-    file, embed = getGif(shy, ctx.author)
-    await ctx.channel.send(file=file, embed=embed)
-
-
-@bot.command()
-async def slap(ctx, targetPerson: discord.Member=None):
-    if not targetPerson:
-        await ctx.channel.send('To use this command please mention any user.')
-        return  
-    file, embed = getGif(slap, ctx.author, targetPerson)
-    await ctx.channel.send(file=file, embed=embed)
-
-
-@bot.command()
-async def spank(ctx, targetPerson: discord.Member=None):
-    if not targetPerson:
-        await ctx.channel.send('To use this command please mention any user.')
-        return  
-    file, embed = getGif(spank, ctx.author, targetPerson)
-    await ctx.channel.send(file=file, embed=embed)
-        
-
-def getGif(command, author, targetPerson: discord.Member=None):
-    DIR = "img/{}/".format(command)
-    filesAll = [name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name))]
-    gif = "img/{}/{}".format(command, random.choice(filesAll))
-    file = discord.File(gif, filename="image.gif")
-    if targetPerson == None:
-        actions = {
-            'deadinside' : '{} is dead inside.'.format(author.name),
-            'shy' : '{} is {}'.format(author.name, command),
-        }
-    else: 
-        actions = {  
-            'fuck' : '{} {}s {}'.format(author.name, command, targetPerson.mention),               
-            'kick' : '{} {}s {}'.format(author.name, command, targetPerson.mention),
-            'kiss' : '{} {}es {}'.format(author.name, command, targetPerson.mention),
-            'pat' : '{} {}s {}'.format(author.name, command, targetPerson.mention),
-            'slap' : '{} {}s {}'.format(author.name, command, targetPerson.mention),
-            'spank' : '{} {}s {}'.format(author.name, command, targetPerson.mention), 
-        }
-    description = actions[str(command)]
-    if targetPerson == bot.user:
-        description += '\n😳'
-    embed = discord.Embed(color=0xff6961, description = description)
-    embed.set_image(url="attachment://image.gif")
-    return file, embed
-
+bot.load_extension("ytplay")
+bot.load_extension("gifs")
 bot.run(TOKEN)

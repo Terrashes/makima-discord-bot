@@ -4,7 +4,8 @@ import random
 from datetime import *
 import json
 import requests
-import os
+import os, platform
+
 
 
 # -----------ONLY FOR TESTING----------
@@ -19,6 +20,7 @@ TOKEN = tokenKey
 # keep_alive()
 
 # -------------------------------------
+
 
 def get_prefix(client, message):
     with open("prefixes.json", "r") as f:
@@ -85,9 +87,12 @@ async def help(ctx):
 
 @bot.command(aliases=['p', 'cls', 'clear', 'del', 'delete'])
 @commands.has_permissions(administrator = True)
-async def purge(ctx, amount):
-    await ctx.channel.send("Deleting {} messages.".format(amount))
-    await ctx.message.channel.purge(limit=int(amount) + 2)
+async def purge(ctx, amount = None):
+    if (amount is None):
+        await ctx.channel.send("Please type amount of messages to delete.".format(amount))
+    else:
+        await ctx.channel.send("Deleting {} messages.".format(amount))
+        await ctx.message.channel.purge(limit=int(amount) + 2)
 
 
 @bot.command(pass_context=True)
@@ -212,6 +217,7 @@ async def on_member_remove(Member):
     await leaveChannel.send("{} just leaved the server!".format(Member.mention))
 
 
-bot.load_extension("ytplay")
 bot.load_extension("gifs")
+from music import check_queue,search_song,play_song
+bot.load_extension("music")
 bot.run(TOKEN)

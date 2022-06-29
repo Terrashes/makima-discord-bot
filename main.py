@@ -74,12 +74,12 @@ async def help(ctx):
                     value=("Sample: `purge 10` (Deletes latest 10 messages in chat.)\n Alternatives: `p`, `cls`, `clear`, `del`, `delete`"), inline=False)
     embed.add_field(name="Use `avatar` to view user's avatar.",
                     value=("Sample: `avatar @user` (Shows author's avatar if no user has been mentioned.)"), inline=False)
-    embed.add_field(name="Use `mid` to decide who's going to mid.",
-                    value=("This command doesn't have any arguments."), inline=False)
     embed.add_field(name='Use `roll` to roll a random number.',
                     value=("Sample: `roll 1 1000` (By default it's rolling in 1-100 interval.)"), inline=False)
     embed.add_field(name='Use `flip` to flip a coin.',
                     value=("Sample: `flip head` (Guess side of the coin using `head/tail` after command)"), inline=False)
+    embed.add_field(name="Use `nhentai` to find hentai manga's info by ID.",
+                    value=("Sample: `nhentai 177013`"), inline=False)
     embed.add_field(name='❗Hey! Check out some new GIF commands!',
                     value=("`fuck`, `kiss`, `pat`, `kick`, `shy`, `slap`, `spank`, `deadinside`"), inline=False)
     await ctx.send(embed = embed)
@@ -116,7 +116,7 @@ async def status(ctx):
         value=("Working on `{} servers`".format(serverCount)), inline=False)
     embed.add_field(
         name="Latency",
-        value=("Bot's ping is `{} ms`".format(int(bot.latency*1000//1))), inline=False)
+        value=("Current latency is `{} ms`".format(int(bot.latency*1000//1))), inline=False)
     await ctx.send(embed=embed)
 
 
@@ -134,7 +134,7 @@ async def prefix(ctx, prefixValue=""):
         prefixes[str(ctx.guild.id)] = prefixValue
         with open("prefixes.json", "w") as f:
             json.dump(prefixes, f)
-        await ctx.channel.send('Current prefix is `{}` Server prefix changed.'.format(prefixes[str(ctx.guild.id)]))
+        await ctx.channel.send('Server prefix changed. Current prefix is `{}`.'.format(prefixes[str(ctx.guild.id)]))
 
 
 # ------------ROLL GAMES, ETC-------------
@@ -142,20 +142,10 @@ async def prefix(ctx, prefixValue=""):
 
 @bot.command(pass_context=True)
 async def roll(ctx, minRoll=0, maxRoll=100):
+    if minRoll == maxRoll:
+        minRoll = 1
+    print(minRoll, maxRoll)
     await ctx.reply(getRandom(minRoll, maxRoll))
-
-
-@bot.command(pass_context=True)
-async def mid(ctx):
-    userRoll = getRandom(1, 100)
-    botRoll = getRandom(1, 100)
-    if int(userRoll) > int(botRoll):
-        midResult = "You rolled " + userRoll + "\n" + "Me rolled " + botRoll + "\n" + userRoll + " > " + botRoll + "\n" + "Mid is yours, going to ruin"
-    elif int(userRoll) < int(botRoll):
-        midResult = "You rolled " + userRoll + "\n" + "Me rolled " + botRoll + "\n" + userRoll + " < " + botRoll + "\n" + "Ez mid, ez life"
-    else:
-        midResult = "You rolled " + userRoll + "\n" + "Me rolled " + botRoll + "\n" + "Ебаать, ты хоть знаешь какой шанс такое рольнуть? Реролл"
-    await ctx.reply(midResult)
 
 
 @bot.command(pass_context=True)
@@ -218,6 +208,7 @@ async def on_member_remove(Member):
 
 
 bot.load_extension("gifs")
-from music import check_queue,search_song,play_song
+from music import check_queue, search_song, play_song
 bot.load_extension("music")
+bot.load_extension("nhentai")
 bot.run(TOKEN)

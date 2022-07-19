@@ -1,4 +1,6 @@
+from msilib.schema import Component
 from bs4 import BeautifulSoup
+from discord_components import DiscordComponents, Button, ButtonStyle
 import requests
 import discord
 from discord.ext import commands
@@ -53,8 +55,21 @@ async def nhentai(ctx, id):
         info = get_info(response)
         embed = discord.Embed(color=0xff6961)
         embed.add_field(name = info[0], value = info[2], inline=False)
-        embed.set_image(url=info[1])
-        await ctx.channel.send(embed=embed)
+        page = embed.set_image(url=info[1])
+        message = await ctx.channel.send(embed=embed,
+            components = [
+            Button(style=ButtonStyle.grey, label="Previous", emoji="⏮️"),
+            Button(style=ButtonStyle.grey, label="Next", emoji="⏭️")
+            ]   
+        )
+        buttonPress = await bot.wait_for("button_click")
+        if buttonPress.channel == ctx.channel:
+            if buttonPress.component.label == "Previous":
+                page = embed.set_image(url="https://i.imgur.com/yrwAhWo.jpeg")
+                await message.edit(embed=embed)
+            if buttonPress.component.label == "Next":
+                page = embed.set_image(url="=info[1]")
+                await message.edit(embed=embed)
     else:
         await ctx.channel.send("ID wasn't found. (Error {}.)".format(response.status_code))
 

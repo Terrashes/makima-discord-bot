@@ -1,1 +1,1 @@
-﻿#### [Invite link](https://discord.com/api/oauth2/authorize?client_id=856919025397137438&permissions=0&scope=bot "https://discord.com/api/oauth2/authorize?client_id=856919025397137438&permissions=0&scope=bot")
+﻿#### [Invite link](https://discord.com/api/oauth2/authorize?client_id=956954360154304602&permissions=8&scope=bot "https://discord.com/api/oauth2/authorize?client_id=956954360154304602&permissions=8&scope=bot")

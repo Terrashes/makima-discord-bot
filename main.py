@@ -72,43 +72,47 @@ async def help(ctx):
     prefix = get_prefix(bot, ctx)[0]
     embed = discord.Embed(title = "Commands Dashboard", color=0xff6961)
     embed.add_field(
-        name="Use `prefix` to change server prefix.",
+        name="`prefix` to change server prefix.",
         value=('Current server prefix is `{}`.'.format(prefix)), 
         inline=False)
     embed.add_field(
-        name="Use `status` to check bot's statistics.",
+        name="`status` to check bot's statistics.",
         value=("This command doesn't have any arguments."), 
         inline=False)
     embed.add_field(
-        name="Use `purge` to delete latest messages in chat.",
-        value=("Sample: `purge 10` (Deletes latest 10 messages in chat.)\n Alternatives: `p`, `cls`, `clear`, `del`, `delete`"), 
+        name="`onjoin` and `onleave` to add messages for users who just joined and left server.",
+        value=('Sample: `onjoin "Welcome, {}!"` ({} - for mention user)'), 
         inline=False)
     embed.add_field(
-        name="Use `avatar` to view user's avatar.",
+        name="`purge` to delete latest messages in chat.",
+        value=("Sample: `purge 10` (Deletes latest 10 messages in chat.)\n Aliases: `p`, `cls`, `clear`, `del`, `delete`"), 
+        inline=False)
+    embed.add_field(
+        name="`avatar` to view user's avatar.",
         value=("Sample: `avatar @user` (Shows author's avatar if no user has been mentioned.)"), 
         inline=False)
     embed.add_field(
-        name="Use `info` to view user's profile information.",
+        name="`info` to view user's profile information.",
         value=("Sample: `info @user` (Shows author's info if no user has been mentioned.)"), 
         inline=False)
     embed.add_field(
-        name='Use `roll` to roll a random number.',
+        name='`roll` to roll a random number.',
         value=("Sample: `roll 1 1000` (By default it's rolling in 1-100 interval.)"), 
         inline=False)
     embed.add_field(
-        name='Use `flip` to flip a coin.',
+        name='`flip` to flip a coin.',
         value=("Sample: `flip head` (Guess side of the coin using `head/tail` after command)"), 
         inline=False)
     embed.add_field(
-        name='Use `play` to play youtube audio and `leave` to leave voice channel.',
+        name='`play` to play youtube audio and `leave` to leave voice channel.',
         value=("Sample: `play https://youtu.be/H3sdfKMKu8E`"), 
         inline=False)
     embed.add_field(
-        name="Use `nhentai` to find hentai manga's info by ID.",
+        name="`nhentai` to find hentai manga's info by ID.",
         value=("Sample: `nhentai 177013`"), 
         inline=False)
     embed.add_field(
-        name='❗Hey! Check out some new GIF commands!',
+        name='GIF message commands!',
         value=("`fuck`, `kiss`, `pat`, `kick`, `shy`, `slap`, `spank`, `deadinside`"), 
         inline=False)
     await ctx.send(embed = embed)

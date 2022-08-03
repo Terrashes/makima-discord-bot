@@ -8,25 +8,20 @@ from main import bot
 
 
 cookies = {
-    'cf_clearance': 'eINMW9hcX962t6WxjcoewVn64QLiRye76G.T_wzLSkY-1656492615-0-150',
-    'csrftoken': 'M0bNXNa38HXDoLtf6w3tVr9AoN2jsHZx6jHU7uGPO8urM2BPUcfNApqczNG7CE55',
+    "cf_clearance": "hy7szdLIpMHpUzzXUHI31CusN.S0ltuvL4DStjffII8-1658665867-0-150",
+    "csrftoken": "M0bNXNa38HXDoLtf6w3tVr9AoN2jsHZx6jHU7uGPO8urM2BPUcfNApqczNG7CE55"
 }
 
 headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:101.0) Gecko/20100101 Firefox/101.0',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.5',
-    # 'Accept-Encoding': 'gzip, deflate, br',
     'DNT': '1',
     'Connection': 'keep-alive',
-    # Requests sorts cookies= alphabetically
-    # 'Cookie': 'cf_clearance=eINMW9hcX962t6WxjcoewVn64QLiRye76G.T_wzLSkY-1656492615-0-150; csrftoken=M0bNXNa38HXDoLtf6w3tVr9AoN2jsHZx6jHU7uGPO8urM2BPUcfNApqczNG7CE55',
     'Upgrade-Insecure-Requests': '1',
     'Sec-Fetch-Dest': 'document',
     'Sec-Fetch-Mode': 'navigate',
     'Sec-Fetch-Site': 'cross-site',
-    # Requests doesn't support trailers
-    # 'TE': 'trailers',
 }
 
 
@@ -48,9 +43,12 @@ def get_info(response):
 
 
 @commands.command()
-async def nhentai(ctx, id):
-    URL = 'https://nhentai.net/g/' + id
+async def nhentai(ctx, id = 'random'):
+    if id != 'random':
+        id == 'g/' + id
+    URL = 'https://nhentai.net/' + id
     response = requests.get(URL, cookies=cookies, headers=headers)
+    print(URL, response)
     if response.status_code == 200:
         info = get_info(response)
         embed = discord.Embed(color=0xff6961)

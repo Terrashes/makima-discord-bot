@@ -9,13 +9,11 @@ import os, platform
 
 
 with open("config.json", "r") as f:
-        TOKEN = json.load(f)["tokenKey"]
+    config = json.load(f)
 
 
 def get_prefix(client, message):
-    with open("config.json", "r") as f:
-        prefixes = json.load(f)["prefixes"]
-    return prefixes[str(message.guild.id)], 'm!'
+    return config["prefixes"][str(message.guild.id)], 'm!'
 
 
 intents = discord.Intents.all()
@@ -42,20 +40,16 @@ async def on_ready():
 
 @bot.event
 async def on_guild_join(guild):
-    with open("prefixes.json", "r") as f:
-        prefixes = json.load(f)
-    prefixes[str(guild.id)] = "m!"
-    with open("prefixes.json", "w") as f:
-        json.dump(prefixes, f)
+    config["prefixes"][str(guild.id)] = "m!"
+    with open("config.json", "w") as f:
+        json.dump(config, f)
 
 
 @bot.event
 async def on_guild_remove(guild):
-    with open("prefixes.json", "r") as f:
-        prefixes = json.load(f)
-    del prefixes[str(guild.id)]
-    with open("prefixes.json", "w") as f:
-        json.dump(prefixes, f)
+    del config["prefixes"][str(guild.id)]
+    with open("config.json", "w") as f:
+        json.dump(config, f)
 
 
 # ------------SERVICE COMMANDS-------------
@@ -121,9 +115,7 @@ async def purge(ctx, amount = None):
 @bot.command(pass_context=True)
 async def status(ctx):
     botOnlineDuration = beautifyDateDelta(startupDate)
-    with open("prefixes.json", "r") as f:
-        prefixes = json.load(f)
-    serverCount = len(prefixes)
+    serverCount = len(config["prefixes"])
     embed = discord.Embed(
         color=0xff6961, 
         title="Bot's uptime", 
@@ -133,28 +125,26 @@ async def status(ctx):
         value = (startupDate.strftime("`%H:%M:%S` `%d.%m.%Y`")), inline=False)
     embed.add_field(
         name="Servers",
-        value=("Working on `{} servers`".format(serverCount)), inline=False)
+        value=("Working on `{}` servers".format(serverCount)), inline=False)
     embed.add_field(
         name="Latency",
-        value=("Current latency is `{} ms`".format(int(bot.latency*1000//1))), inline=False)
+        value=("Current latency is `{}` ms".format(int(bot.latency*1000//1))), inline=False)
     await ctx.send(embed=embed)
 
 
 @bot.command()
 @commands.has_permissions(administrator = True)
 async def prefix(ctx, prefixValue=""):
-    with open("prefixes.json", "r") as f:
-        prefixes = json.load(f)
-    if prefixValue == prefixes[str(ctx.guild.id)]:
+    if prefixValue == config["prefixes"][str(ctx.guild.id)]:
         await ctx.channel.send("Current prefix is `{}`. Server prefix didn't change because you specified the same prefix as current.".format(
-            prefixes[str(ctx.guild.id)]))
+            config["prefixes"][str(ctx.guild.id)]))
     elif prefixValue == "":
-        await ctx.channel.send('Current prefix is `{}`.'.format(prefixes[str(ctx.guild.id)]))
+        await ctx.channel.send('Current prefix is `{}`.'.format(config["prefixes"][str(ctx.guild.id)]))
     else:
-        prefixes[str(ctx.guild.id)] = prefixValue
-        with open("prefixes.json", "w") as f:
-            json.dump(prefixes, f)
-        await ctx.channel.send('Server prefix changed. Current prefix is `{}`.'.format(prefixes[str(ctx.guild.id)]))
+        config["prefixes"][str(ctx.guild.id)] = prefixValue
+        with open("config.json", "w") as f:
+            json.dump(config, f)
+        await ctx.channel.send('Server prefix changed. Current prefix is `{}`.'.format(config["prefixes"][str(ctx.guild.id)]))
 
 
 # ------------ROLL GAMES, ETC-------------
@@ -261,4 +251,4 @@ bot.load_extension("gifs")
 from music import check_queue, search_song, play_song
 bot.load_extension("music")
 bot.load_extension("nhentai")
-bot.run(TOKEN)
+bot.run(config["token"])

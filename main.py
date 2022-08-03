@@ -12,8 +12,13 @@ with open("config.json", "r") as f:
     config = json.load(f)
 
 
+def writeConfig():
+    with open("config.json", "w") as f:
+        json.dump(config, f, indent=4,  
+                        separators=(',',': '))
+
 def get_prefix(client, message):
-    return config["prefixes"][str(message.guild.id)], 'm!'
+    return config["servers"][str(message.guild.id)]["prefix"], 'm!'
 
 
 intents = discord.Intents.all()
@@ -40,16 +45,23 @@ async def on_ready():
 
 @bot.event
 async def on_guild_join(guild):
-    config["prefixes"][str(guild.id)] = "m!"
-    with open("config.json", "w") as f:
-        json.dump(config, f)
+    config["servers"].update({
+    str(guild.id) :
+        {
+            "prefix": "m!", 
+            "joinMessageChannel": "", 
+            "leaveMessageChannel": "",
+            "joinMessage": "{} joined the server!", 
+            "leaveMessage": "{} left the server!",
+        }
+    })
+    writeConfig()
 
 
 @bot.event
 async def on_guild_remove(guild):
-    del config["prefixes"][str(guild.id)]
-    with open("config.json", "w") as f:
-        json.dump(config, f)
+    del config["servers"][str(guild.id)]
+    writeConfig()
 
 
 # ------------SERVICE COMMANDS-------------
@@ -115,7 +127,7 @@ async def purge(ctx, amount = None):
 @bot.command(pass_context=True)
 async def status(ctx):
     botOnlineDuration = beautifyDateDelta(startupDate)
-    serverCount = len(config["prefixes"])
+    serverCount = len(config["servers"])
     embed = discord.Embed(
         color=0xff6961, 
         title="Bot's uptime", 
@@ -135,16 +147,15 @@ async def status(ctx):
 @bot.command()
 @commands.has_permissions(administrator = True)
 async def prefix(ctx, prefixValue=""):
-    if prefixValue == config["prefixes"][str(ctx.guild.id)]:
+    if prefixValue == config["servers"][str(ctx.guild.id)]["prefix"]:
         await ctx.channel.send("Current prefix is `{}`. Server prefix didn't change because you specified the same prefix as current.".format(
-            config["prefixes"][str(ctx.guild.id)]))
+            config["servers"][str(ctx.guild.id)]["prefix"]))
     elif prefixValue == "":
-        await ctx.channel.send('Current prefix is `{}`.'.format(config["prefixes"][str(ctx.guild.id)]))
+        await ctx.channel.send('Current prefix is `{}`.'.format(config["servers"][str(ctx.guild.id)]["prefix"]))
     else:
-        config["prefixes"][str(ctx.guild.id)] = prefixValue
-        with open("config.json", "w") as f:
-            json.dump(config, f)
-        await ctx.channel.send('Server prefix changed. Current prefix is `{}`.'.format(config["prefixes"][str(ctx.guild.id)]))
+        config["servers"][str(ctx.guild.id)]["prefix"] = prefixValue
+        writeConfig()
+        await ctx.channel.send('Server prefix changed. Current prefix is `{}`.'.format(config["servers"][str(ctx.guild.id)]["prefix"]))
 
 
 # ------------ROLL GAMES, ETC-------------
@@ -224,27 +235,31 @@ def getRandom(min, max):
 
 
 @bot.command()
-async def onjoin(ctx):
-    global joinChannel
-    joinChannel = ctx.channel
+async def onjoin(ctx, message):
+    config["servers"][str(ctx.guild.id)]["joinMessageChannel"] = str(ctx.channel.id)
+    config["servers"][str(ctx.guild.id)]["joinMessage"] = message
+    writeConfig()
     await ctx.channel.send("Now notification about new members will be shown in this channel")
-    
+
 
 @bot.event
 async def on_member_join(Member):
-    await joinChannel.send("{} just joined the server! Welcome!".format(Member.mention))
+    channel = bot.get_channel(int(config["servers"][str(Member.guild.id)]["joinMessageChannel"]))
+    await channel.send(config["servers"][str(Member.guild.id)]["joinMessage"].format(Member.mention))
 
 
 @bot.command()
-async def onleave(ctx):
-    global leaveChannel
-    leaveChannel = ctx.channel
-    await ctx.channel.send("Now notification about new members will be shown in this channel")
+async def onleave(ctx, message):
+    config["servers"][str(ctx.guild.id)]["leaveMessageChannel"] = str(ctx.channel.id)
+    config["servers"][str(ctx.guild.id)]["leaveMessage"] = message
+    writeConfig()
+    await ctx.channel.send("Now notification about left members will be shown in this channel")
     
 
 @bot.event
 async def on_member_remove(Member):
-    await leaveChannel.send("{} just leaved the server!".format(Member.mention))
+    channel = bot.get_channel(int(config["servers"][str(Member.guild.id)]["leaveMessageChannel"]))
+    await channel.send(config["servers"][str(Member.guild.id)]["leaveMessage"].format(Member.mention))
 
 
 bot.load_extension("gifs")

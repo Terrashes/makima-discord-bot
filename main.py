@@ -1,3 +1,5 @@
+from urllib import response
+from urllib.error import URLError
 import discord
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle
@@ -105,7 +107,7 @@ async def help(ctx):
         inline=False)
     embed.add_field(
         name='`play` to play youtube audio and `leave` to leave voice channel.',
-        value=("Sample: `play https://youtu.be/H3sdfKMKu8E`"), 
+        value=("Sample: `play https://youtu.be/iWpCdUQLWwU`"), 
         inline=False)
     embed.add_field(
         name="`nhentai` to find hentai manga's info by ID.",
@@ -231,6 +233,18 @@ async def info(ctx, targetPerson:  discord.Member=None):
     await ctx.channel.send(embed=embed)
 
 
+@bot.command()
+async def checkip(ctx, ip=None):
+    API_Token = '3617fbb4249944f61316ede0496c9bc5'
+    response = requests.get('http://api.ipapi.com/{}?access_key={}&output=json'.format(ip, API_Token)).json()
+    embed = discord.Embed(title='Info about {}'.format(ip), color=0xff6961)
+    embed.add_field(name='Region:',value=response['region_name'], inline=False)
+    embed.add_field(name='City',value=response['city'], inline=False)
+    embed.add_field(name='Latitude:',value=response['latitude'], inline=False)
+    embed.add_field(name='Longitude:',value=response['longitude'], inline=False)
+    await ctx.channel.send(embed=embed)
+
+
 def getRandom(min, max):
     return str(random.randint(int(min), int(max)))
 
@@ -263,7 +277,7 @@ async def onleave(ctx, message):
 @bot.event
 async def on_member_remove(Member):
     channel = bot.get_channel(int(config["servers"][str(Member.guild.id)]["leaveMessageChannel"]))
-    await channel.send(config["servers"][str(Member.guild.id)]["leaveMessage"].format(Member.mention))
+    await channel.send(config["servers"][str(Member.guild.id)]["leaveMessage"].format(str(Member.name)+"#"+str(Member.discriminator)))
 
 
 bot.load_extension("gifs")

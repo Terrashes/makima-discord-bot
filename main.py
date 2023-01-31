@@ -2,7 +2,6 @@ from urllib import response
 from urllib.error import URLError
 import discord
 from discord.ext import commands, tasks
-from discord_components import DiscordComponents, Button, ButtonStyle
 import random
 from datetime import *
 import json
@@ -40,7 +39,6 @@ def beautifyDateDelta(date):
 async def on_ready():
     startupDate = datetime.now()
     activity = discord.Game(name="m!help")
-    DiscordComponents(bot)
     await bot.change_presence(status=discord.Status.online, activity=activity)
     print("[{}] Makima is online now!".format(startupDate.isoformat(sep=' ')))
     
@@ -109,10 +107,10 @@ async def help(ctx):
         name='`play` to play youtube audio and `leave` to leave voice channel.',
         value=("Sample: `play https://youtu.be/iWpCdUQLWwU`"), 
         inline=False)
-    embed.add_field(
-        name="`nhentai` to find hentai manga's info by ID.",
-        value=("Sample: `nhentai 177013`"), 
-        inline=False)
+    # embed.add_field(
+    #     name="`nhentai` to find hentai manga's info by ID.",
+    #     value=("Sample: `nhentai 177013`"), 
+    #     inline=False)
     embed.add_field(
         name='GIF message commands!',
         value=("`fuck`, `kiss`, `pat`, `kick`, `shy`, `slap`, `spank`, `deadinside`"), 
@@ -281,7 +279,7 @@ async def on_member_remove(Member):
 
 
 bot.load_extension("gifs")
-from music import check_queue, search_song, play_song
-bot.load_extension("music")
-bot.load_extension("nhentai")
+# from music import check_queue, search_song, play_song
+# bot.load_extension("music")
+# bot.load_extension("nhentai")
 bot.run(config["token"])

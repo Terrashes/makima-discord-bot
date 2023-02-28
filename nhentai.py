@@ -72,7 +72,7 @@ async def nhentai(ctx, id = 'random'):
         await ctx.channel.send("ID wasn't found. (Error {}.)".format(response.status_code))
 
 
-def setup(bot):
+async def setup(bot):
     commands = [nhentai]
-    for i in range(0, len(commands)):
-        bot.add_command(commands[i])
+    for command in commands:
+        bot.add_command(command)

@@ -67,5 +67,5 @@ async def leave(ctx):
 
 def setup(bot):
     commands = [play, leave]
-    for i in range(0, len(commands)):
-        bot.add_command(commands[i])
+    for command in commands:
+        bot.add_command(command)

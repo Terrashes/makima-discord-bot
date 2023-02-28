@@ -99,7 +99,8 @@ def getGif(command, author, targetPerson: discord.Member=None):
     return file, embed
 
 
-def setup(bot):
+async def setup(bot):
     commands = [deadinside, shy, fuck, kick, kiss, pat, slap, spank]
-    for i in range(0, len(commands)):
-        bot.add_command(commands[i])
+    for command in commands:
+        bot.add_command(command)
+        

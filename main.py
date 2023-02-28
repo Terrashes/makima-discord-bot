@@ -7,6 +7,7 @@ from datetime import *
 import json
 import requests
 import os, platform
+import asyncio
 
 
 with open("config.json", "r") as f:
@@ -278,8 +279,19 @@ async def on_member_remove(Member):
     await channel.send(config["servers"][str(Member.guild.id)]["leaveMessage"].format(str(Member.name)+"#"+str(Member.discriminator)))
 
 
-bot.load_extension("gifs")
 # from music import check_queue, search_song, play_song
 # bot.load_extension("music")
 # bot.load_extension("nhentai")
-bot.run(config["token"])
+async def load_extensions():
+    for filename in os.listdir("./"):
+        if filename.endswith(".py") and filename == "gifs.py":
+            await bot.load_extension(f"{filename[:-3]}")
+
+
+async def main():
+    await load_extensions()
+    await bot.start(config["token"])
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

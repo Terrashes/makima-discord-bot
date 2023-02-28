@@ -1,14 +1,15 @@
-from urllib import response
-from urllib.error import URLError
-import discord
-from discord.ext import commands, tasks
+import asyncio
+import json
+import os
+import platform
 import random
 from datetime import *
-import json
-import requests
-import os, platform
-import asyncio
+from urllib import response
+from urllib.error import URLError
 
+import discord
+import requests
+from discord.ext import commands, tasks
 
 with open("config.json", "r") as f:
     config = json.load(f)
@@ -279,13 +280,14 @@ async def on_member_remove(Member):
     await channel.send(config["servers"][str(Member.guild.id)]["leaveMessage"].format(str(Member.name)+"#"+str(Member.discriminator)))
 
 
-# from music import check_queue, search_song, play_song
-# bot.load_extension("music")
-# bot.load_extension("nhentai")
+# from youtube import check_queue, search_song, play_song
+
 async def load_extensions():
-    for filename in os.listdir("./"):
-        if filename.endswith(".py") and filename == "gifs.py":
-            await bot.load_extension(f"{filename[:-3]}")
+    # for filename in os.listdir("./"):
+    #     if filename.endswith(".py") and filename == "gifs.py":
+    #         await bot.load_extension(f"{filename[:-3]}")
+    await bot.load_extension(f"gifs")
+    # await bot.load_extension(f"youtube")
 
 
 async def main():

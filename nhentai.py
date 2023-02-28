@@ -1,11 +1,11 @@
 from msilib.schema import Component
-from bs4 import BeautifulSoup
-from discord_components import DiscordComponents, Button, ButtonStyle
-import requests
-import discord
-from discord.ext import commands
-from main import bot
 
+import discord
+import requests
+from bs4 import BeautifulSoup
+from discord.ext import commands
+
+from main import bot
 
 cookies = {
     "cf_clearance": "hy7szdLIpMHpUzzXUHI31CusN.S0ltuvL4DStjffII8-1658665867-0-150",

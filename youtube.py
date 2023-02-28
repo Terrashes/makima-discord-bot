@@ -1,8 +1,10 @@
 import discord
-from discord.ext import commands
-import youtube_dl
-from main import bot
 import pafy
+import youtube_dl
+from discord.ext import commands
+
+from main import bot
+
 
 async def check_queue(self, ctx):
         if len(self.song_queue[ctx.guild.id]) > 0:

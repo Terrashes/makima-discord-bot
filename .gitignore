@@ -4,3 +4,5 @@ venv
 *.json
 tempCodeRunnerFile.py
 !sampleconfig.json
+debug.log
+twitch_notifs.py

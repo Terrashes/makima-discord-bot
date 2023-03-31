@@ -14,6 +14,24 @@ from discord.ext import commands, tasks
 with open("config.json", "r") as f:
     config = json.load(f)
 
+import logging
+import logging.handlers
+
+logger = logging.getLogger('discord')
+logger.setLevel(logging.DEBUG)
+logging.getLogger('discord.http').setLevel(logging.INFO)
+
+handler = logging.handlers.RotatingFileHandler(
+    filename='debug.log',
+    encoding='utf-8',
+    maxBytes=32 * 1024 * 1024,  # 32 MiB
+    backupCount=5,  # Rotate through 5 files
+)
+dt_fmt = '%Y-%m-%d %H:%M:%S'
+formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
 
 def writeConfig():
     with open("config.json", "w") as f:
@@ -25,21 +43,20 @@ def get_prefix(client, message):
 
 
 intents = discord.Intents.all()
-startupDate = datetime.now()
+startupDate = datetime.now(timezone.utc)
 bot = commands.Bot(command_prefix = get_prefix, help_command=None, intents=intents)
 
 
 def beautifyDateDelta(date):
-    timeDelta = (datetime.now() - date)
+    timeDelta = (datetime.now(timezone.utc) - date)
     timeDeltaDays = timeDelta.days
     timeDeltaSecs = int((timeDelta.total_seconds()-timeDelta.days*86400)//1)
-    timeParams = [timeDeltaDays//360, timeDeltaDays%360//30, timeDeltaDays%360%30, timeDeltaSecs//3600, timeDeltaSecs%3600//60, timeDeltaSecs%3600%60]
+    timeParams = [timeDeltaDays//365, timeDeltaDays%365//30, timeDeltaDays%365%30, timeDeltaSecs//3600, timeDeltaSecs%3600//60, timeDeltaSecs%3600%60]
     return timeParams
 
 
 @bot.event
 async def on_ready():
-    startupDate = datetime.now()
     activity = discord.Game(name="m!help")
     await bot.change_presence(status=discord.Status.online, activity=activity)
     print("[{}] Makima is online now!".format(startupDate.isoformat(sep=' ')))
@@ -197,7 +214,7 @@ async def flip(ctx, flipGuess=""):
 async def avatar(ctx, targetPerson:  discord.Member=None):
     if not targetPerson:
         targetPerson = ctx.author
-    targetAvatar = targetPerson.avatar_url
+    targetAvatar = targetPerson.avatar
     embed = discord.Embed(color=0xff6961)
     embed.add_field(
         name = targetPerson, 
@@ -221,14 +238,14 @@ async def info(ctx, targetPerson:  discord.Member=None):
     accCreateDelta = beautifyDateDelta(targetPerson.created_at)
     accJoinDelta = beautifyDateDelta(targetPerson.joined_at)
     embed = discord.Embed(title=targetPerson, color=0xff6961)
-    embed.set_thumbnail(url=targetPerson.avatar_url),
+    embed.set_thumbnail(url=targetPerson.avatar),
     embed.add_field(name='Account created:',value="{} ({} years, {} months, {} days ago)".format(accCreate, accCreateDelta[0], accCreateDelta[1], accCreateDelta[2]), inline=False)
     embed.add_field(name='Joined server:',value="{} ({} years, {} months, {} days ago)".format(accJoin, accJoinDelta[0], accJoinDelta[1], accJoinDelta[2]), inline=False)
     embed.add_field(
         name = "User ID:", 
         value=" {}".format(targetPerson.id), 
         inline=True)
-    embed.add_field(name=f'Roles:({len(rlist)})',value=''.join([b]),inline=False)
+    embed.add_field(name=f'Roles ({len(rlist)}) :',value=''.join([b]),inline=False)
     embed.add_field(name='Top Role:',value=targetPerson.top_role.mention,inline=False)
     await ctx.channel.send(embed=embed)
 

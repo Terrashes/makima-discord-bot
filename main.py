@@ -9,6 +9,7 @@ from urllib.error import URLError
 
 import discord
 import requests
+from discord import app_commands
 from discord.ext import commands, tasks
 
 with open("config.json", "r") as f:
@@ -35,7 +36,7 @@ logger.addHandler(handler)
 
 def writeConfig():
     with open("config.json", "w") as f:
-        json.dump(config, f, indent=4,  
+        json.dump(config, f, indent=4,
                         separators=(',',': '))
 
 def get_prefix(client, message):
@@ -57,20 +58,21 @@ def beautifyDateDelta(date):
 
 @bot.event
 async def on_ready():
+    await bot.tree.sync()
     activity = discord.Game(name="m!help")
     await bot.change_presence(status=discord.Status.online, activity=activity)
-    print("[{}] Makima is online now!".format(startupDate.isoformat(sep=' ')))
-    
+    print(f"[{startupDate.isoformat(sep=' ')}] Makima is online now!")
+
 
 @bot.event
 async def on_guild_join(guild):
     config["servers"].update({
-    str(guild.id) :
+        str(guild.id):
         {
-            "prefix": "m!", 
-            "joinMessageChannel": "", 
+            "prefix": "m!",
+            "joinMessageChannel": "",
             "leaveMessageChannel": "",
-            "joinMessage": "{} joined the server!", 
+            "joinMessage": "{} joined the server!",
             "leaveMessage": "{} left the server!",
         }
     })
@@ -92,49 +94,54 @@ async def help(ctx):
     embed = discord.Embed(title = "Commands Dashboard", color=0xff6961)
     embed.add_field(
         name="`prefix` to change server prefix.",
-        value=('Current server prefix is `{}`.'.format(prefix)), 
+        value=('Current server prefix is `{}`.'.format(prefix)),
         inline=False)
     embed.add_field(
         name="`status` to check bot's statistics.",
-        value=("This command doesn't have any arguments."), 
+        value=("This command doesn't have any arguments."),
         inline=False)
     embed.add_field(
         name="`onjoin` and `onleave` to add messages for users who just joined and left server.",
-        value=('Sample: `onjoin "Welcome, {}!"` ({} - for mention user)'), 
+        value=('Sample: `onjoin "Welcome, {}!"` ({} - for mention user)'),
         inline=False)
     embed.add_field(
         name="`purge` to delete latest messages in chat.",
-        value=("Sample: `purge 10` (Deletes latest 10 messages in chat.)\n Aliases: `p`, `cls`, `clear`, `del`, `delete`"), 
+        value=("Sample: `purge 10` (Deletes latest 10 messages in chat.)\n Aliases: `p`, `cls`, `clear`, `del`, `delete`"),
         inline=False)
     embed.add_field(
         name="`avatar` to view user's avatar.",
-        value=("Sample: `avatar @user` (Shows author's avatar if no user has been mentioned.)"), 
+        value=("Sample: `avatar @user` (Shows author's avatar if no user has been mentioned.)"),
         inline=False)
     embed.add_field(
         name="`info` to view user's profile information.",
-        value=("Sample: `info @user` (Shows author's info if no user has been mentioned.)"), 
+        value=("Sample: `info @user` (Shows author's info if no user has been mentioned.)"),
         inline=False)
     embed.add_field(
         name='`roll` to roll a random number.',
-        value=("Sample: `roll 1 1000` (By default it's rolling in 1-100 interval.)"), 
+        value=("Sample: `roll 1 1000` (By default it's rolling in 1-100 interval.)"),
         inline=False)
     embed.add_field(
         name='`flip` to flip a coin.',
-        value=("Sample: `flip head` (Guess side of the coin using `head/tail` after command)"), 
+        value=("Sample: `flip head` (Guess side of the coin using `head/tail` after command)"),
         inline=False)
     embed.add_field(
         name='`play` to play youtube audio and `leave` to leave voice channel.',
-        value=("Sample: `play https://youtu.be/iWpCdUQLWwU`"), 
+        value=("Sample: `play https://youtu.be/iWpCdUQLWwU`"),
         inline=False)
     # embed.add_field(
     #     name="`nhentai` to find hentai manga's info by ID.",
-    #     value=("Sample: `nhentai 177013`"), 
+    #     value=("Sample: `nhentai 177013`"),
     #     inline=False)
     embed.add_field(
         name='GIF message commands!',
-        value=("`fuck`, `kiss`, `pat`, `kick`, `shy`, `slap`, `spank`, `deadinside`"), 
+        value=("`fuck`, `kiss`, `pat`, `kick`, `shy`, `slap`, `spank`, `deadinside`"),
         inline=False)
     await ctx.send(embed = embed)
+
+
+@bot.hybrid_command(name="ping", with_app_command=True, description="Generic slash command")
+async def ping(ctx):
+    await ctx.send('Pong')
 
 
 @bot.command(aliases=['p', 'cls', 'clear', 'del', 'delete'])
@@ -152,8 +159,8 @@ async def status(ctx):
     botOnlineDuration = beautifyDateDelta(startupDate)
     serverCount = len(config["servers"])
     embed = discord.Embed(
-        color=0xff6961, 
-        title="Bot's uptime", 
+        color=0xff6961,
+        title="Bot's uptime",
         description="Uptime: {} days, {} hours, {} min, {} sec".format(botOnlineDuration[2], botOnlineDuration[3], botOnlineDuration[4], botOnlineDuration[5]))
     embed.add_field(
         name="Last started",
@@ -217,8 +224,8 @@ async def avatar(ctx, targetPerson:  discord.Member=None):
     targetAvatar = targetPerson.avatar
     embed = discord.Embed(color=0xff6961)
     embed.add_field(
-        name = targetPerson, 
-        value="Click [Here](%s) to download picture." % targetAvatar, 
+        name = targetPerson,
+        value="Click [Here](%s) to download picture." % targetAvatar,
         inline=False)
     embed.set_image(url=targetAvatar)
     await ctx.channel.send(embed=embed)
@@ -242,8 +249,8 @@ async def info(ctx, targetPerson:  discord.Member=None):
     embed.add_field(name='Account created:',value="{} ({} years, {} months, {} days ago)".format(accCreate, accCreateDelta[0], accCreateDelta[1], accCreateDelta[2]), inline=False)
     embed.add_field(name='Joined server:',value="{} ({} years, {} months, {} days ago)".format(accJoin, accJoinDelta[0], accJoinDelta[1], accJoinDelta[2]), inline=False)
     embed.add_field(
-        name = "User ID:", 
-        value=" {}".format(targetPerson.id), 
+        name = "User ID:",
+        value=" {}".format(targetPerson.id),
         inline=True)
     embed.add_field(name=f'Roles ({len(rlist)}) :',value=''.join([b]),inline=False)
     embed.add_field(name='Top Role:',value=targetPerson.top_role.mention,inline=False)
@@ -289,71 +296,19 @@ async def onleave(ctx, message):
     config["servers"][str(ctx.guild.id)]["leaveMessage"] = message
     writeConfig()
     await ctx.channel.send("Now notification about left members will be shown in this channel")
-    
+
 
 @bot.event
 async def on_member_remove(Member):
     channel = bot.get_channel(int(config["servers"][str(Member.guild.id)]["leaveMessageChannel"]))
     await channel.send(config["servers"][str(Member.guild.id)]["leaveMessage"].format(str(Member.name)+"#"+str(Member.discriminator)))
 
-from twitchAPI.twitch import Twitch
-client_id = "qsm0n0lvoius27w01syilwlb7nsvsy"
-client_secret = "gia56aw6tnynovac6x10wxupr4xvrl"
-twitch = Twitch(client_id, client_secret)
-twitch.authenticate_app([])
-TWITCH_STREAM_API_ENDPOINT_V5 = "https://api.twitch.tv/kraken/streams/{}"
-API_HEADERS = {
-    'Client-ID': client_id,
-    'Accept': 'application/vnd.twitchtv.v5+json',
-}
-
-
-# Returns true if online, false if not.
-def checkuser(user):
-    try:
-        userid = twitch.get_users(logins=[user])['data'][0]['id']
-        url = TWITCH_STREAM_API_ENDPOINT_V5.format(userid)
-        try:
-            req = requests.Session().get(url, headers=API_HEADERS)
-            jsondata = req.json()
-            if 'stream' in jsondata:
-                if jsondata['stream'] is not None:
-                    return True
-                else:
-                    return False
-        except Exception as e:
-            print("Error checking user: ", e)
-            return False
-    except IndexError:
-        return False
-
-
-# Command to add Twitch usernames to the json.
-@bot.command(name='addtwitch', help='Adds your Twitch to the live notifs.', pass_context=True)
-async def add_twitch(ctx, twitch_name):
-    # Opens and reads the json file.
-    with open('streamers.json', 'r') as file:
-        streamers = json.loads(file.read())
-    
-    # Gets the users id that called the command.
-    user_id = ctx.author.id
-    # Assigns their given twitch_name to their discord id and adds it to the streamers.json.
-    streamers[user_id] = twitch_name
-    
-    # Adds the changes we made to the json file.
-    with open('streamers.json', 'w') as file:
-        file.write(json.dumps(streamers))
-    # Tells the user it worked.
-    await ctx.send(f"Added {twitch_name} for {ctx.author} to the notifications list.")
-
-
-# from youtube import check_queue, search_song, play_song
 
 async def load_extensions():
     # for filename in os.listdir("./"):
     #     if filename.endswith(".py") and filename == "gifs.py":
     #         await bot.load_extension(f"{filename[:-3]}")
-    await bot.load_extension(f"gifs")
+    await bot.load_extension("gifs")
     # await bot.load_extension(f"youtube")
 
 

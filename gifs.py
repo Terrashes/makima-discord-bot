@@ -17,7 +17,7 @@ async def deadinside(ctx):
 async def fuck(ctx, targetPerson: discord.Member=None):
     if not targetPerson:
         await ctx.channel.send('To use this command please mention any user.')
-        return  
+        return
     file, embed = getGif(fuck, ctx.author, targetPerson)
     await ctx.channel.send(file=file, embed=embed)
 
@@ -26,7 +26,7 @@ async def fuck(ctx, targetPerson: discord.Member=None):
 async def kick(ctx, targetPerson: discord.Member=None):
     if not targetPerson:
         await ctx.channel.send('To use this command please mention any user.')
-        return  
+        return
     file, embed = getGif(kick, ctx.author, targetPerson)
     await ctx.channel.send(file=file, embed=embed)
 
@@ -35,7 +35,7 @@ async def kick(ctx, targetPerson: discord.Member=None):
 async def kiss(ctx, targetPerson: discord.Member=None):
     if not targetPerson:
         await ctx.channel.send('To use this command please mention any user.')
-        return  
+        return
     file, embed = getGif(kiss, ctx.author, targetPerson)
     await ctx.channel.send(file=file, embed=embed)
 
@@ -44,7 +44,7 @@ async def kiss(ctx, targetPerson: discord.Member=None):
 async def pat(ctx, targetPerson: discord.Member=None):
     if not targetPerson:
         await ctx.channel.send('To use this command please mention any user.')
-        return  
+        return
     file, embed = getGif(pat, ctx.author, targetPerson)
     await ctx.channel.send(file=file, embed=embed)
 
@@ -59,7 +59,7 @@ async def shy(ctx):
 async def slap(ctx, targetPerson: discord.Member=None):
     if not targetPerson:
         await ctx.channel.send('To use this command please mention any user.')
-        return  
+        return
     file, embed = getGif(slap, ctx.author, targetPerson)
     await ctx.channel.send(file=file, embed=embed)
 
@@ -68,41 +68,40 @@ async def slap(ctx, targetPerson: discord.Member=None):
 async def spank(ctx, targetPerson: discord.Member=None):
     if not targetPerson:
         await ctx.channel.send('To use this command please mention any user.')
-        return  
+        return
     file, embed = getGif(spank, ctx.author, targetPerson)
     await ctx.channel.send(file=file, embed=embed)
-        
+
 
 def getGif(command, author, targetPerson: discord.Member=None):
-    DIR = "img/{}/".format(command)
+    DIR = f"media/{command}/"
     filesAll = [name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name))]
-    gif = "img/{}/{}".format(command, random.choice(filesAll))
+    gif = f"media/{command}/{random.choice(filesAll)}"
     file = discord.File(gif, filename="image.gif")
-    
+
     if not targetPerson:
         actions = {
-            'deadinside' : '{} is dead inside.'.format(author.mention),
-            'shy' : '{} is {}'.format(author.mention, command),
+            'deadinside': f'{author.mention} is dead inside.',
+            'shy': f'{author.mention} is {command}'
         }
-    else: 
-        actions = {  
-            'fuck' : '{} {}s {}'.format(author.name, command, targetPerson.mention),               
-            'kick' : '{} {}s {}'.format(author.name, command, targetPerson.mention),
-            'kiss' : '{} {}es {}'.format(author.name, command, targetPerson.mention),
-            'pat' : '{} {}s {}'.format(author.name, command, targetPerson.mention),
-            'slap' : '{} {}s {}'.format(author.name, command, targetPerson.mention),
-            'spank' : '{} {}s {}'.format(author.name, command, targetPerson.mention), 
+    else:
+        actions = {
+            'fuck': f'{author.name} {command}s {targetPerson.mention}',
+            'kick': f'{author.name} {command}s {targetPerson.mention}',
+            'kiss': f'{author.name} {command}es {targetPerson.mention}',
+            'pat': f'{author.name} {command}s {targetPerson.mention}',
+            'slap': f'{author.name} {command}s {targetPerson.mention}',
+            'spank': f'{author.name} {command}s {targetPerson.mention}',
         }
     description = actions[str(command)]
-    if targetPerson == bot.user:
+    if str(command) != 'kick' and str(targetPerson) == "Makima Ch.#7921":
         description += '\n😳'
-    embed = discord.Embed(color=0xff6961, description = description)
+    embed = discord.Embed(color=0xff6961, description=description)
     embed.set_image(url="attachment://image.gif")
     return file, embed
 
 
 async def setup(bot):
-    commands = [deadinside, shy, fuck, kick, kiss, pat, slap, spank]
-    for command in commands:
+    commands_to_add = [deadinside, shy, fuck, kick, kiss, pat, slap, spank]
+    for command in commands_to_add:
         bot.add_command(command)
-        

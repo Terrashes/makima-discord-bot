@@ -1,8 +1,5 @@
 .vscode
 __pycache__
-venv
-*.json
-tempCodeRunnerFile.py
-!sampleconfig.json
+.venv
+config.json
 debug.log
-twitch_notifs.py

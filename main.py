@@ -1,12 +1,13 @@
 import asyncio
 import json
+import logging
+import logging.handlers
 import os
 import platform
-import random
 from datetime import *
+from random import randint, choice
 from urllib import response
 from urllib.error import URLError
-import yt_dlp
 
 import discord
 import requests
@@ -16,23 +17,24 @@ from discord.ext import commands, tasks
 with open("config.json", "r") as f:
     config = json.load(f)
 
-import logging
-import logging.handlers
 
-logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
-logging.getLogger('discord.http').setLevel(logging.INFO)
+def logger_init() -> None:
+    """Create logger
+    """
+    logger = logging.getLogger('discord')
+    logger.setLevel(logging.DEBUG)
+    logging.getLogger('discord.http').setLevel(logging.INFO)
 
-handler = logging.handlers.RotatingFileHandler(
-    filename='debug.log',
-    encoding='utf-8',
-    maxBytes=32 * 1024 * 1024,  # 32 MiB
-    backupCount=5,  # Rotate through 5 files
-)
-dt_fmt = '%Y-%m-%d %H:%M:%S'
-formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+    handler = logging.handlers.RotatingFileHandler(
+        filename='debug.log',
+        encoding='utf-8',
+        maxBytes=32 * 1024 * 1024,  # 32 MiB
+        backupCount=5,  # Rotate through 5 files
+    )
+    dt_fmt = '%Y-%m-%d %H:%M:%S'
+    formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
 
 
 def writeConfig():
@@ -140,17 +142,17 @@ async def help(ctx):
         name='GIF message commands!',
         value=("`fuck`, `kiss`, `pat`, `kick`, `shy`, `slap`, `spank`, `deadinside`"),
         inline=False)
-    await ctx.send(embed = embed)
+    await ctx.send(embed=embed)
 
 
-@bot.hybrid_command(name="ping", with_app_command=True, description="Generic slash command")
-async def ping(ctx):
-    await ctx.send('Pong')
+# @bot.hybrid_command(name="ping", with_app_command=True, description="Generic slash command")
+# async def ping(ctx):
+#     await ctx.send('Pong')
 
 
 @bot.command(aliases=['p', 'cls', 'clear', 'del', 'delete'])
-@commands.has_permissions(administrator = True)
-async def purge(ctx, amount = None):
+@commands.has_permissions(administrator=True)
+async def purge(ctx, amount=None):
     if (amount is None):
         await ctx.channel.send("Please type amount of messages to delete.".format(amount))
     else:
@@ -193,71 +195,63 @@ async def prefix(ctx, prefixValue=""):
 
 
 # ------------ROLL GAMES, ETC-------------
-
-
 @bot.command(pass_context=True)
-async def roll(ctx, minRoll=None, maxRoll=None):
-    if minRoll == None and maxRoll == None:
-        minRoll, maxRoll = 0, 100
-    elif maxRoll == None:
-        maxRoll, minRoll = minRoll, 1
-    await ctx.reply(getRandom(minRoll, maxRoll))
+async def roll(ctx, min_value=None, max_value=None):
+    if min_value is None and max_value is None:
+        min_value, max_value = 0, 100
+    elif max_value is None:
+        min_value, max_value = 1, min_value
+    await ctx.reply(randint(int(min_value), int(max_value)))
 
 
 @bot.command(pass_context=True)
 async def flip(ctx, flipGuess=""):
-    flipResult = int(getRandom(1, 2))
-    if flipResult == 1:
-        flipResult = 'head'
-    else:
-        flipResult = 'tail'
-    flipMessage = "Flipped " + flipResult
-    if flipGuess == flipResult:
-        flipMessage += " - you guessed right."
+    flip_result = choice(["head", "tail"])
+    message = f"Got **{flip_result}**"
+    if flipGuess.lower() == flip_result:
+        message += " - you guessed right"
     elif flipGuess == 'head' or flipGuess == 'tail':
-        flipMessage += " - you didn't guess right."
-    else:
-        flipMessage += "."
-    await ctx.reply(flipMessage)
+        message += " - you didn't guess right"
+    await ctx.reply(message)
 
 
 @bot.command()
-async def avatar(ctx, targetPerson:  discord.Member=None):
-    if not targetPerson:
-        targetPerson = ctx.author
-    targetAvatar = targetPerson.avatar
+async def avatar(ctx, target_person: discord.Member=None):
+    if not target_person:
+        target_person = ctx.author
+    target_avatar = target_person.avatar
     embed = discord.Embed(color=0xff6961)
     embed.add_field(
-        name = targetPerson,
-        value="Click [Here](%s) to download picture." % targetAvatar,
+        name=target_person,
+        value="Click [Here](%s) to download picture." % target_avatar,
         inline=False)
-    embed.set_image(url=targetAvatar)
+    embed.set_image(url=target_avatar)
     await ctx.channel.send(embed=embed)
 
 
 @bot.command()
-async def info(ctx, targetPerson:  discord.Member=None):
-    if not targetPerson:
-        targetPerson = ctx.author
+async def info(ctx, target_person:  discord.Member=None):
+    if not target_person:
+        target_person = ctx.author
     rlist = []
-    for role in targetPerson.roles:
+    for role in target_person.roles:
         if role.name != "@everyone":
             rlist.append(role.mention)
     b = ", ".join(rlist)
-    accCreate =  targetPerson.created_at.strftime("`%H:%M:%S` `%d.%m.%Y`")
-    accJoin = targetPerson.joined_at.strftime("`%H:%M:%S` `%d.%m.%Y`")
-    accCreateDelta = beautifyDateDelta(targetPerson.created_at)
-    accJoinDelta = beautifyDateDelta(targetPerson.joined_at)
-    embed = discord.Embed(title=targetPerson, color=0xff6961)
-    embed.set_thumbnail(url=targetPerson.avatar),
+    accCreate = target_person.created_at.strftime("`%H:%M:%S` `%d.%m.%Y`")
+    accJoin = target_person.joined_at.strftime("`%H:%M:%S` `%d.%m.%Y`")
+    accCreateDelta = beautifyDateDelta(target_person.created_at)
+    accJoinDelta = beautifyDateDelta(target_person.joined_at)
+    embed = discord.Embed(title=target_person, color=0xff6961)
+    embed.set_thumbnail(url=target_person.avatar),
     embed.add_field(name='Account created:',value="{} ({} years, {} months, {} days ago)".format(accCreate, accCreateDelta[0], accCreateDelta[1], accCreateDelta[2]), inline=False)
     embed.add_field(name='Joined server:',value="{} ({} years, {} months, {} days ago)".format(accJoin, accJoinDelta[0], accJoinDelta[1], accJoinDelta[2]), inline=False)
     embed.add_field(
         name = "User ID:",
-        value=" {}".format(targetPerson.id),
+        value=" {}".format(target_person.id),
         inline=True)
     embed.add_field(name=f'Roles ({len(rlist)}) :',value=''.join([b]),inline=False)
-    embed.add_field(name='Top Role:',value=targetPerson.top_role.mention,inline=False)
+    embed.add_field(name='Top Role:',value=target_person.top_role.mention,inline=False)
     await ctx.channel.send(embed=embed)
 
 
@@ -271,10 +265,6 @@ async def checkip(ctx, ip=None):
     embed.add_field(name='Latitude:',value=response['latitude'], inline=False)
     embed.add_field(name='Longitude:',value=response['longitude'], inline=False)
     await ctx.channel.send(embed=embed)
-
-
-def getRandom(min, max):
-    return str(random.randint(int(min), int(max)))
 
 
 # ------------JOIN AND lEAVE MESSAGES-------------
@@ -308,56 +298,10 @@ async def on_member_remove(Member):
     await channel.send(config["servers"][str(Member.guild.id)]["leaveMessage"].format(str(Member.name)+"#"+str(Member.discriminator)))
 
 
-FFMPEG_OPTIONS = {'options': '-vn'}
-YDL_OPTIONS = {
-    'format': 'bestaudio',
-    'noplaylist': True,
-    'cookiefile': 'yt_cookies.txt'
-    }
-yt_queue = []
-
-
-@bot.command()
-async def play(ctx, *, search):
-    voice_channel = ctx.author.voice.channel if ctx.author.voice else None
-    if not voice_channel:
-        return await ctx.send("You're not in voice channel")
-    if not ctx.voice_client:
-        await voice_channel.connect()
-
-    async with ctx.typing():
-        with yt_dlp.YoutubeDL(YDL_OPTIONS) as ydl:
-            info = ydl.extract_info(f"ytsearch:{search}", download=False)
-            if 'entries' in info:
-                info = info['entries'][0]
-            url = info['url']
-            title = info['title']
-            yt_queue.append((url, title))
-            await ctx.send(f"Added to queue: **{title}**")
-    if not ctx.voice_client.is_playing():
-        await play_next(ctx=ctx)
-
-
-async def play_next(ctx):
-    if yt_queue:
-        url, title = yt_queue.pop(0)
-        source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTIONS)
-        ctx.voice_client.play(source, after=lambda _: bot.loop.create_task(play_next(ctx)))
-    elif not ctx.voice_client.is_playing():
-        await ctx.send('Queue is empty')
-
-@bot.command()
-async def skip(ctx):
-    if ctx.voice_client and ctx.voice_client.is_playing():
-        ctx.voice_client.stop()
-        await ctx.send('Skipped')
-
 async def load_extensions():
-    # for filename in os.listdir("./"):
-    #     if filename.endswith(".py") and filename == "gifs.py":
-    #         await bot.load_extension(f"{filename[:-3]}")
     await bot.load_extension("gifs")
-    # await bot.load_extension(f"youtube")
+    await bot.load_extension("play_youtube")
+    # await bot.load_extension("twitch_notifications")
 
 
 async def main():
@@ -366,4 +310,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    logger_init()
     asyncio.run(main())

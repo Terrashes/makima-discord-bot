@@ -22,6 +22,7 @@ async def get_gif(ctx, command: str, person: discord.Member = None):
     else:
         actions = {
             'fuck': f'{ctx.author.name} {command}s {person.mention}',
+            'suck': f'{ctx.author.name} {command}s {person.mention}',
             'kick': f'{ctx.author.name} {command}s {person.mention}',
             'kiss': f'{ctx.author.name} {command}es {person.mention}',
             'pat': f'{ctx.author.name} {command}s {person.mention}',
@@ -64,6 +65,11 @@ async def fuck(ctx, person: discord.Member = None):
     await get_gif(ctx, 'fuck', person)
 
 
+@commands.hybrid_command(name="suck", with_app_command=True, description="Suck GIF action")
+async def suck(ctx, person: discord.Member = None):
+    await get_gif(ctx, 'suck', person)
+
+
 @commands.hybrid_command(name="kick", with_app_command=True, description="Kick GIF action")
 async def kick(ctx, person: discord.Member = None):
     await get_gif(ctx, 'kick', person)
@@ -90,6 +96,6 @@ async def spank(ctx, person: discord.Member = None):
 
 
 async def setup(bot):
-    commands_to_add = [deadinside, shy, fuck, kick, kiss, pat, slap, spank]
+    commands_to_add = [deadinside, shy, fuck, suck, kick, kiss, pat, slap, spank]
     for command in commands_to_add:
         bot.add_command(command)

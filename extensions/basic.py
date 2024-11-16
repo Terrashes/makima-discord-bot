@@ -77,7 +77,7 @@ async def purge(ctx, amount=None):
         await ctx.message.channel.purge(limit=int(amount) + 2)
 
 
-@commands.hybrid_command(name="status", with_app_command=True, description="Bot's status")
+@commands.command()
 async def status(ctx):
     botOnlineDuration = beautifyDateDelta(startupDate)
     serverCount = len(config["servers"])

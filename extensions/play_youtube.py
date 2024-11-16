@@ -1,6 +1,8 @@
+import asyncio
+
 import discord
-from discord.ext import commands
 import yt_dlp
+from discord.ext import commands
 
 from main import bot
 
@@ -38,12 +40,15 @@ async def play_next(ctx):
     if yt_queue:
         url, title = yt_queue.pop(0)
         source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTIONS)
-        ctx.voice_client.play(source, after=lambda _: bot.loop.create_task(play_next(ctx)))
+        ctx.voice_client.play(source,
+                              after=lambda _: asyncio.run_coroutine_threadsafe(play_next(ctx),
+                                                                               asyncio.get_running_loop())
+                              )
     elif not ctx.voice_client.is_playing():
         await ctx.send('Queue is empty')
 
 
-@bot.command()
+@commands.hybrid_command(name="skip", with_app_command=True, description="Skip youtube video")
 async def skip(ctx):
     if ctx.voice_client and ctx.voice_client.is_playing():
         ctx.voice_client.stop()

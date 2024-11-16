@@ -1,6 +1,8 @@
 .vscode
 __pycache__
 .venv
+media/suck/*
+media/fuck/*
 config.json
 debug.log
 yt_cookies.txt

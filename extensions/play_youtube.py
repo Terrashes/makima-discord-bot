@@ -1,4 +1,5 @@
 import asyncio
+from typing import Any
 
 import discord
 import yt_dlp
@@ -6,7 +7,7 @@ from discord.ext import commands
 
 from main import bot
 
-FFMPEG_OPTIONS = {'options': '-vn'}
+FFMPEG_OPTIONS: dict[str, str] = {'options': '-vn'}
 YDL_OPTIONS = {
     'format': 'bestaudio',
     'noplaylist': True,
@@ -16,7 +17,7 @@ yt_queue = []
 
 
 @commands.hybrid_command(name="play", with_app_command=True, description="Play youtube video")
-async def play(ctx, *, search):
+async def play(ctx, *, search) -> None:
     voice_channel = ctx.author.voice.channel if ctx.author.voice else None
     if not voice_channel:
         return await ctx.send("You're not in voice channel")
@@ -49,13 +50,13 @@ async def play_next(ctx):
 
 
 @commands.hybrid_command(name="skip", with_app_command=True, description="Skip youtube video")
-async def skip(ctx):
+async def skip(ctx) -> None:
     if ctx.voice_client and ctx.voice_client.is_playing():
         ctx.voice_client.stop()
         await ctx.send('Skipped')
 
 
-async def setup(bot):
+async def setup(bot) -> None:
     commands_to_add = [play, skip]
     for command in commands_to_add:
         bot.add_command(command)

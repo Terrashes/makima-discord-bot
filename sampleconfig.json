@@ -1,6 +1,10 @@
 {
-    "token": "PASTEPRIVATETOKENHERE",
+    "discord_token": "",
+    "ipapi_token": "",
+    "twitch_client_id": "",
+    "twitch_secret": "",
     "servers": {
-
+    },
+    "twitch": {
     }
 }

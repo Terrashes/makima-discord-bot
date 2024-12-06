@@ -232,7 +232,7 @@ async def ttry(ctx, *, action: Optional[str] = None) -> None:
         await ctx.send('Please specify action to try.')
         return
     result = choice(["успешно", "неуспешно"])
-    message = f"{ctx.author.name} {result} {action}"
+    message = f"{ctx.author.mention} `{result}` {action}"
     await ctx.send(message)
 
 

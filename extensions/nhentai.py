@@ -58,7 +58,7 @@ async def nhentai(ctx, id = 'random'):
             components = [
             Button(style=ButtonStyle.grey, label="Previous", emoji="⏮️"),
             Button(style=ButtonStyle.grey, label="Next", emoji="⏭️")
-            ]   
+            ]
         )
         buttonPress = await bot.wait_for("button_click")
         if buttonPress.channel == ctx.channel:
@@ -72,7 +72,5 @@ async def nhentai(ctx, id = 'random'):
         await ctx.channel.send("ID wasn't found. (Error {}.)".format(response.status_code))
 
 
-async def setup(bot):
-    commands = [nhentai]
-    for command in commands:
-        bot.add_command(command)
+async def setup(bot) -> None:
+    bot.add_command(nhentai)

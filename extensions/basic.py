@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from random import choice, randint
-from typing import Any
+from typing import Any, Optional
 
 import discord
 import requests
@@ -57,13 +57,17 @@ async def help(ctx) -> None:
         name='`play` to play youtube audio and `leave` to leave voice channel.',
         value=("Sample: `play https://youtu.be/iWpCdUQLWwU`"),
         inline=False)
+    embed.add_field(
+        name='`ttry` to randomly try any action.',
+        value=("Sample: `try do something`"),
+        inline=False)
     # embed.add_field(
     #     name="`nhentai` to find hentai manga's info by ID.",
     #     value=("Sample: `nhentai 177013`"),
     #     inline=False)
     embed.add_field(
-        name='GIF message commands!',
-        value=("`fuck`, `kiss`, `pat`, `kick`, `shy`, `slap`, `spank`, `deadinside`"),
+        name='New gif actions commands',
+        value=("`fuck`, `kiss`, `pat`, `kick`, `shy`, `slap`, `spank`, `deadinside`, `suck`"),
         inline=False)
     await ctx.send(embed=embed)
 
@@ -216,6 +220,22 @@ async def onleave(ctx, message) -> None:
 #     await channel.send(config["servers"][str(Member.guild.id)]["leaveMessage"].format(str(Member.name)+"#"+str(Member.discriminator)))
 
 
+@commands.hybrid_command(name="ttry", with_app_command=True, description="Try some action")
+async def ttry(ctx, *, action: Optional[str] = None) -> None:
+    """
+    Simulates an actor trying an action, randomly deciding success or failure.
+
+    :param ctx: The context of the command.
+    :param action: The action being attempted.
+    """
+    if action is None:
+        await ctx.send('To use this command, please mention a user.')
+        return
+    result = choice(["успешно", "неуспешно"])
+    message = f"{ctx.author.name} {result} {action}"
+    await ctx.send(message)
+
+
 async def setup(bot) -> None:
     commands_to_add = [
         help,
@@ -229,6 +249,7 @@ async def setup(bot) -> None:
         checkip,
         onjoin,
         onleave,
+        ttry
     ]
     for command in commands_to_add:
         bot.add_command(command)

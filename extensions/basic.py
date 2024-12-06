@@ -220,7 +220,7 @@ async def onleave(ctx, message) -> None:
 #     await channel.send(config["servers"][str(Member.guild.id)]["leaveMessage"].format(str(Member.name)+"#"+str(Member.discriminator)))
 
 
-@commands.hybrid_command(name="ttry", with_app_command=True, description="Try some action")
+@commands.hybrid_command(name="try", with_app_command=True, description="Try some action")
 async def ttry(ctx, *, action: Optional[str] = None) -> None:
     """
     Simulates an actor trying an action, randomly deciding success or failure.
@@ -229,7 +229,7 @@ async def ttry(ctx, *, action: Optional[str] = None) -> None:
     :param action: The action being attempted.
     """
     if action is None:
-        await ctx.send('To use this command, please mention a user.')
+        await ctx.send('Please specify action to try.')
         return
     result = choice(["успешно", "неуспешно"])
     message = f"{ctx.author.name} {result} {action}"

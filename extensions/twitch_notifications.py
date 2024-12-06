@@ -1,26 +1,24 @@
+from typing import Any
 import asyncio
 import json
-from typing import Any
-
 import discord
 import requests
 from discord.ext import commands
 
-
 class TwitchCog(commands.Cog):
-    def __init__(self, bot: commands.Bot) -> None:
-        self.bot: commands.Bot = bot
-        self.config: Any = self.load_config()
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+        self.config = self.load_config()
         self.notification_task = None
-        self.twitch_access_token: Any = self.get_twitch_access_token()
+        self.twitch_access_token = self.get_twitch_access_token()
 
     @staticmethod
-    def load_config() -> Any::
+    def load_config():
         """Load the configuration."""
         with open("config.json", "r") as file:
             return json.load(file)
 
-    def save_config(self) -> None:
+    def save_config(self):
         """Save the configuration."""
         with open("config.json", "w") as file:
             json.dump(self.config, file, indent=4)
@@ -58,7 +56,7 @@ class TwitchCog(commands.Cog):
             print(f"Error checking Twitch status: {e}")
             return False, "", ""
 
-    async def send_notification(self, streamer_username) -> None:
+    async def send_notification(self, streamer_username):
         """Send notifications about a streamer's status."""
         try:
             streamer_info = self.config["twitch"].get(streamer_username, {})
@@ -89,7 +87,7 @@ class TwitchCog(commands.Cog):
         except Exception as e:
             print(f"Error sending notification: {e}")
 
-    async def send_notifications(self) -> None:
+    async def send_notifications(self):
         """Periodic task to check Twitch streams and send notifications."""
         while not self.bot.is_closed():
             try:
@@ -99,9 +97,9 @@ class TwitchCog(commands.Cog):
                 await asyncio.sleep(60)
             except Exception as e:
                 print(f"Error in notification loop: {e}")
-
+    
     @commands.hybrid_command(name="twadd", description="Add Twitch streamer for notifications")
-    async def twadd(self, ctx, streamer_username: str = None) -> None:
+    async def twadd(self, ctx, streamer_username: str = None):
         """Add a Twitch streamer for notifications."""
         if not streamer_username:
             await ctx.send("Please specify the streamer's username.")
@@ -138,7 +136,7 @@ class TwitchCog(commands.Cog):
         await ctx.send(f"Streamer `{streamer_username}` has been added to notifications.")
 
     @commands.hybrid_command(name="twdel", description="Remove Twitch streamer notifications")
-    async def twdel(self, ctx, streamer_username: str = None) -> None:
+    async def twdel(self, ctx, streamer_username: str = None):
         """Remove a Twitch streamer from notifications."""
         if not streamer_username:
             await ctx.send("Please specify the streamer's username.")
@@ -154,7 +152,7 @@ class TwitchCog(commands.Cog):
             await ctx.send(f"Streamer `{streamer_username}` is not tracked in this channel.")
 
     @commands.hybrid_command(name="twlist", description="List Twitch streamers tracked in this channel")
-    async def twlist(self, ctx) -> None:
+    async def twlist(self, ctx):
         """List Twitch streamers being tracked in the current channel."""
         message = "**Tracked Streamers:**"
         for streamer_username, streamer_info in self.config["twitch"].items():
@@ -167,12 +165,11 @@ class TwitchCog(commands.Cog):
             await ctx.send(message)
 
     @commands.Cog.listener()
-    async def on_ready(self) -> None:
+    async def on_ready(self):
         """Start the notification task when the bot is ready."""
         if not self.notification_task:
-            self.notification_task: asyncio.Task[None] = asyncio.create_task(self.send_notifications())
+            self.notification_task = asyncio.create_task(self.send_notifications())
 
-
-async def setup(bot: commands.Bot) -> None:
+async def setup(bot: commands.Bot):
     """Add the TwitchCog to the bot."""
     await bot.add_cog(TwitchCog(bot))

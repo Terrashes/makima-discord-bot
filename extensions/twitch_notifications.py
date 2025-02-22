@@ -5,6 +5,7 @@ import discord
 import requests
 from discord.ext import commands
 
+
 class TwitchCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -42,7 +43,9 @@ class TwitchCog(commands.Cog):
                 "Client-ID": self.config["twitch_client_id"],
                 "Authorization": f"Bearer {self.twitch_access_token}",
             }
-            twitch_api_url = f"https://api.twitch.tv/helix/streams?user_login={streamer_username}"
+            twitch_api_url = (
+                f"https://api.twitch.tv/helix/streams?user_login={streamer_username}"
+            )
             response = requests.get(twitch_api_url, headers=headers).json()
             status = bool(response.get("data", []))
             title = response["data"][0]["title"] if status else ""
@@ -97,8 +100,10 @@ class TwitchCog(commands.Cog):
                 await asyncio.sleep(60)
             except Exception as e:
                 print(f"Error in notification loop: {e}")
-    
-    @commands.hybrid_command(name="twadd", description="Add Twitch streamer for notifications")
+
+    @commands.hybrid_command(
+        name="twadd", description="Add Twitch streamer for notifications"
+    )
     async def twadd(self, ctx, streamer_username: str = None):
         """Add a Twitch streamer for notifications."""
         if not streamer_username:
@@ -113,51 +118,78 @@ class TwitchCog(commands.Cog):
             message = await self.bot.wait_for(
                 "message",
                 timeout=60,
-                check=lambda msg: msg.author == ctx.author and msg.channel == ctx.channel,
+                check=lambda msg: msg.author == ctx.author
+                and msg.channel == ctx.channel,
             )
             message_live = message.content
         except asyncio.TimeoutError:
-            await ctx.send("You took too long to respond. Using the default live message.")
+            await ctx.send(
+                "You took too long to respond. Using the default live message."
+            )
 
         await ctx.send("Please enter a message for when the streamer goes offline:")
         try:
             message = await self.bot.wait_for(
                 "message",
                 timeout=60,
-                check=lambda msg: msg.author == ctx.author and msg.channel == ctx.channel,
+                check=lambda msg: msg.author == ctx.author
+                and msg.channel == ctx.channel,
             )
             message_off = message.content
         except asyncio.TimeoutError:
-            await ctx.send("You took too long to respond. Using the default offline message.")
+            await ctx.send(
+                "You took too long to respond. Using the default offline message."
+            )
 
-        twitch_config = self.config["twitch"].setdefault(streamer_username, {"status": False, "channels": {}})
-        twitch_config["channels"][str(ctx.channel.id)] = {"messageLive": message_live, "messageOff": message_off}
+        twitch_config = self.config["twitch"].setdefault(
+            streamer_username, {"status": False, "channels": {}}
+        )
+        twitch_config["channels"][str(ctx.channel.id)] = {
+            "messageLive": message_live,
+            "messageOff": message_off,
+        }
         self.save_config()
-        await ctx.send(f"Streamer `{streamer_username}` has been added to notifications.")
+        await ctx.send(
+            f"Streamer `{streamer_username}` has been added to notifications."
+        )
 
-    @commands.hybrid_command(name="twdel", description="Remove Twitch streamer notifications")
-    async def twdel(self, ctx, streamer_username: str = None):
+    @commands.hybrid_command(
+        name="twdel", description="Remove Twitch streamer notifications"
+    )
+    async def twdel(self, ctx, streamer_username: str):
         """Remove a Twitch streamer from notifications."""
         if not streamer_username:
             await ctx.send("Please specify the streamer's username.")
             return
 
         try:
-            del self.config["twitch"][streamer_username]["channels"][str(ctx.channel.id)]
+            del self.config["twitch"][streamer_username]["channels"][
+                str(ctx.channel.id)
+            ]
             if not self.config["twitch"][streamer_username]["channels"]:
                 del self.config["twitch"][streamer_username]
             self.save_config()
-            await ctx.send(f"Streamer `{streamer_username}` has been removed from notifications.")
+            await ctx.send(
+                f"Streamer `{streamer_username}` has been removed from notifications."
+            )
         except KeyError:
-            await ctx.send(f"Streamer `{streamer_username}` is not tracked in this channel.")
+            await ctx.send(
+                f"Streamer `{streamer_username}` is not tracked in this channel."
+            )
 
-    @commands.hybrid_command(name="twlist", description="List Twitch streamers tracked in this channel")
+    @commands.hybrid_command(
+        name="twlist", description="List Twitch streamers tracked in this channel"
+    )
     async def twlist(self, ctx):
         """List Twitch streamers being tracked in the current channel."""
         message = "**Tracked Streamers:**"
         for streamer_username, streamer_info in self.config["twitch"].items():
             if str(ctx.channel.id) in streamer_info["channels"]:
-                status = ":green_circle: Live" if streamer_info["status"] else ":red_circle: Offline"
+                status = (
+                    ":green_circle: Live"
+                    if streamer_info["status"]
+                    else ":red_circle: Offline"
+                )
                 message += f"\n{streamer_username} {status}"
         if message == "**Tracked Streamers:**":
             await ctx.send("No streamers are being tracked in this channel.")
@@ -169,6 +201,7 @@ class TwitchCog(commands.Cog):
         """Start the notification task when the bot is ready."""
         if not self.notification_task:
             self.notification_task = asyncio.create_task(self.send_notifications())
+
 
 async def setup(bot: commands.Bot):
     """Add the TwitchCog to the bot."""

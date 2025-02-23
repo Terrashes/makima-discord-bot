@@ -78,49 +78,49 @@ async def shy(ctx) -> None:
 @commands.hybrid_command(
     name="fuck", with_app_command=True, description="Fuck GIF action"
 )
-async def fuck(ctx, person: Optional[discord.Member] = None) -> None:
+async def fuck(ctx, person: discord.Member) -> None:
     await get_gif(ctx, "fuck", person)
 
 
 @commands.hybrid_command(
     name="suck", with_app_command=True, description="Suck GIF action"
 )
-async def suck(ctx, person: Optional[discord.Member] = None) -> None:
+async def suck(ctx, person: discord.Member) -> None:
     await get_gif(ctx, "suck", person)
 
 
 @commands.hybrid_command(
     name="kick", with_app_command=True, description="Kick GIF action"
 )
-async def kick(ctx, person: Optional[discord.Member] = None) -> None:
+async def kick(ctx, person: discord.Member) -> None:
     await get_gif(ctx, "kick", person)
 
 
 @commands.hybrid_command(
     name="kiss", with_app_command=True, description="Kiss GIF action"
 )
-async def kiss(ctx, person: Optional[discord.Member] = None) -> None:
+async def kiss(ctx, person: discord.Member) -> None:
     await get_gif(ctx, "kiss", person)
 
 
 @commands.hybrid_command(
     name="pat", with_app_command=True, description="Pat GIF action"
 )
-async def pat(ctx, person: Optional[discord.Member] = None) -> None:
+async def pat(ctx, person: discord.Member) -> None:
     await get_gif(ctx, "pat", person)
 
 
 @commands.hybrid_command(
     name="slap", with_app_command=True, description="Slap GIF action"
 )
-async def slap(ctx, person: Optional[discord.Member] = None) -> None:
+async def slap(ctx, person: discord.Member) -> None:
     await get_gif(ctx, "slap", person)
 
 
 @commands.hybrid_command(
     name="spank", with_app_command=True, description="Spank GIF action"
 )
-async def spank(ctx, person: Optional[discord.Member] = None) -> None:
+async def spank(ctx, person: discord.Member) -> None:
     await get_gif(ctx, "spank", person)
 
 

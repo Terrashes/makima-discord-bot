@@ -77,8 +77,8 @@ async def help(ctx) -> None:
         inline=False,
     )
     embed.add_field(
-        name="`play` to play youtube audio and `leave` to leave voice channel.",
-        value=("Sample: `play https://youtu.be/iWpCdUQLWwU`"),
+        name="Music: `play`, `queue`, `nowplaying`, `pause`, `resume`, `skip`, `stop`, `leave`.",
+        value=("Sample: `play https://youtu.be/iWpCdUQLWwU` or `play never gonna give you up`"),
         inline=False,
     )
     embed.add_field(

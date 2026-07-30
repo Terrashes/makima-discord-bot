@@ -1342,26 +1342,26 @@ propcache = ">=0.2.1"
 
 [[package]]
 name = "yt-dlp"
-version = "2024.12.23"
+version = "2026.7.4"
 description = "A feature-rich command-line audio/video downloader"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 files = [
-    {file = "yt_dlp-2024.12.23-py3-none-any.whl", hash = "sha256:2fc08a5221a0379628ac4e7324c6c69a95b9fdfa7a7ca3187444b3b7451e38be"},
-    {file = "yt_dlp-2024.12.23.tar.gz", hash = "sha256:ac0e72b5a9017ba104b4258546201a7cedc38e8bd20727e0c63b77c829b425e9"},
+    {file = "yt_dlp-2026.7.4-py3-none-any.whl", hash = "sha256:f11f2b11d5a8ac4059f9bdf29fa4407dc7c6bb00c5097e95ca22a7a9db518266"},
+    {file = "yt_dlp-2026.7.4.tar.gz", hash = "sha256:b094813404f87a9dd2186f00815231df32e5fd8a5403be0f807b3bb2d21a4432"},
 ]
 
 [package.extras]
-build = ["build", "hatchling", "pip", "setuptools (>=71.0.2)", "wheel"]
-curl-cffi = ["curl-cffi (==0.5.10)", "curl-cffi (>=0.5.10,!=0.6.*,<0.7.2)"]
-default = ["brotli", "brotlicffi", "certifi", "mutagen", "pycryptodomex", "requests (>=2.32.2,<3)", "urllib3 (>=1.26.17,<3)", "websockets (>=13.0)"]
-dev = ["autopep8 (>=2.0,<3.0)", "pre-commit", "pytest (>=8.1,<9.0)", "pytest-rerunfailures (>=14.0,<15.0)", "ruff (>=0.8.0,<0.9.0)"]
-pyinstaller = ["pyinstaller (>=6.11.1)"]
-secretstorage = ["cffi", "secretstorage"]
-static-analysis = ["autopep8 (>=2.0,<3.0)", "ruff (>=0.8.0,<0.9.0)"]
-test = ["pytest (>=8.1,<9.0)", "pytest-rerunfailures (>=14.0,<15.0)"]
+curl-cffi = ["curl-cffi (>=0.5.10,<0.6.dev0 || >=0.10.dev0,<0.16)"]
+default = ["brotli", "brotlicffi", "certifi", "mutagen", "pycryptodomex", "requests (>=2.32.2,<3)", "urllib3 (>=2.0.2,<3)", "websockets (>=13.0)", "yt-dlp-ejs (==0.8.0)"]
+deno = ["deno (>=2.6.6)"]
+pin = ["brotli (==1.2.0)", "brotlicffi (==1.2.0.1)", "certifi (==2026.6.17)", "charset-normalizer (==3.4.7)", "idna (==3.18)", "mutagen (==1.48.1)", "pycryptodomex (==3.23.0)", "requests (==2.34.2)", "urllib3 (==2.7.0)", "websockets (==16.0)", "yt-dlp-ejs (==0.8.0)"]
+pin-curl-cffi = ["certifi (==2026.6.17)", "cffi (==2.0.0)", "curl-cffi (==0.15.0)", "markdown-it-py (==4.2.0)", "mdurl (==0.1.2)", "pycparser (==3.0)", "pygments (==2.20.0)", "rich (==15.0.0)"]
+pin-deno = ["deno (==2.8.3)"]
+pin-secretstorage = ["cffi (==2.0.0)", "cryptography (==49.0.0)", "jeepney (==0.9.0)", "pycparser (==3.0)", "secretstorage (==3.5.0)", "typing-extensions (==4.15.0)"]
+secretstorage = ["secretstorage"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "ab62992e11ad29e6788a5f9f814fa6736da2bfd1b41b87b58f2ffbf7f29ac9b3"
+content-hash = "97717b4d05e25ec460fd02d54e1be6dd964842a9a9947c28104b6b23e5dffb92"

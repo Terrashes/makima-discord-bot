@@ -29,12 +29,13 @@ FFMPEG_OPTIONS: dict[str, str] = {
     "options": "-vn",
 }
 YDL_OPTIONS: dict[str, Any] = {
-    "format": "bestaudio/best",
+    "format": "bestaudio[acodec=opus]/bestaudio[ext=m4a]/bestaudio/best[acodec!=none]/best",
     "noplaylist": True,
     "quiet": True,
     "no_warnings": True,
     "source_address": "0.0.0.0",
 }
+YDL_FALLBACK_FORMAT = "best[acodec!=none]/best"
 
 
 class MusicError(Exception):
@@ -112,8 +113,18 @@ class Music(commands.Cog):
         if COOKIE_FILE.exists():
             options["cookiefile"] = str(COOKIE_FILE)
 
-        with yt_dlp.YoutubeDL(options) as ydl:
-            info = ydl.extract_info(self._normalise_query(query), download=False)
+        normalised_query = self._normalise_query(query)
+        try:
+            with yt_dlp.YoutubeDL(options) as ydl:
+                info = ydl.extract_info(normalised_query, download=False)
+        except yt_dlp.DownloadError as exc:
+            if "Requested format is not available" not in str(exc):
+                raise
+
+            fallback_options = options.copy()
+            fallback_options["format"] = YDL_FALLBACK_FORMAT
+            with yt_dlp.YoutubeDL(fallback_options) as ydl:
+                info = ydl.extract_info(normalised_query, download=False)
 
         if not isinstance(info, dict):
             raise MusicError("Could not read the YouTube response.")
